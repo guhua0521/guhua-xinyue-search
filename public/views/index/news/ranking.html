@@ -1,0 +1,1510 @@
+{include file="news/common/header"}
+<meta name="referrer" content="never">
+<style>
+    /* 隐藏原导航栏 */
+    .headerBox,
+    .headerKox {
+        display: none !important;
+    }
+    
+    /* 顶部导航栏样式 - 卡片式 */
+    #app > .top-nav {
+        background: transparent !important;
+        padding: 12px 16px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #app > .top-nav .top-nav-box {
+        width: 1048px !important;
+        max-width: calc(100% - 32px) !important;
+        margin: 0 auto !important;
+        padding: 6px 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: var(--theme-surface) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        position: relative !important;
+        transition: background-color 0.3s ease !important;
+    }
+
+    #app > .top-nav .top-nav-logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-decoration: none !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-img,
+    #app > .top-nav .top-nav-logo .logo-placeholder {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-placeholder {
+        background: var(--theme-primary-gradient) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-text {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-title-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-name {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: var(--theme-text) !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-version {
+        font-size: 10px !important;
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+        padding: 1px 6px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-subtitle {
+        font-size: 11px !important;
+        color: var(--theme-text-secondary) !important;
+        max-width: 20em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    #app > .top-nav .top-nav-menu {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    #app > .top-nav .nav-menu-item {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+
+    #app > .top-nav .nav-menu-item:hover,
+    #app > .top-nav .nav-menu-item.active {
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+    
+    /* 后台配置的外链样式 */
+    #app > .top-nav .top-nav-menu > a {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+    
+    #app > .top-nav .top-nav-menu > a:hover,
+    #app > .top-nav .top-nav-menu > a.active {
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+
+    #app > .top-nav .top-nav-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #app > .top-nav .nav-filter-btn {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        border: 1px solid var(--theme-border) !important;
+    }
+
+    #app > .top-nav .nav-filter-btn:hover {
+        border-color: var(--theme-primary) !important;
+        color: var(--theme-primary) !important;
+    }
+
+    #app > .top-nav .nav-theme-btn {
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border: 1px solid var(--theme-border) !important;
+    }
+
+    #app > .top-nav .nav-theme-btn:hover {
+        background: var(--theme-background) !important;
+        color: var(--theme-primary) !important;
+    }
+
+    #app > .top-nav .nav-avatar {
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border: 1px solid var(--theme-border) !important;
+    }
+
+    #app > .top-nav .nav-avatar:hover {
+        background: #f5f5f5 !important;
+        color: var(--theme-primary) !important;
+    }
+
+    /* 主题切换器 */
+    #app > .top-nav .theme-switcher {
+        position: relative;
+        z-index: 1001;
+    }
+
+    #app > .top-nav .theme-switcher-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--theme-surface);
+        color: var(--theme-text-secondary);
+        border: 1px solid var(--theme-border);
+        font-size: 14px;
+    }
+
+    #app > .top-nav .theme-switcher-btn:hover {
+        background: var(--theme-background);
+        color: var(--theme-primary);
+        border-color: var(--theme-primary);
+    }
+
+    #app > .top-nav .theme-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: var(--theme-surface);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        padding: 8px;
+        min-width: 140px;
+        z-index: 9999;
+        border: 1px solid var(--theme-border);
+        transition: background-color 0.3s ease;
+    }
+
+    #app > .top-nav .theme-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--theme-text);
+    }
+
+    #app > .top-nav .theme-option:hover {
+        background: var(--theme-background);
+    }
+
+    #app > .top-nav .theme-option.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+
+    #app > .top-nav .theme-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    #app > .top-nav .theme-name {
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    #app > .top-nav .nav-menu-icon {
+        font-size: 20px !important;
+        cursor: pointer !important;
+        color: var(--theme-text-secondary) !important;
+        display: none !important;
+    }
+    
+    @media (max-width: 1024px) {
+        #app > .top-nav .top-nav-box {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #app > .top-nav .top-nav-menu,
+        #app > .top-nav .nav-filter-btn {
+            display: none !important;
+        }
+        #app > .top-nav .nav-menu-icon {
+            display: block !important;
+        }
+        #app > .top-nav .top-nav-logo .logo-subtitle {
+            display: none !important;
+        }
+        #app > .top-nav .theme-switcher-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+        }
+        #app > .top-nav .theme-dropdown {
+            right: -40px;
+            min-width: 120px;
+        }
+        #app > .top-nav .theme-name {
+            font-size: 12px;
+        }
+    }
+
+    /* Ranking page styles */
+    .ranking-page-container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 16px;
+    }
+
+    .ranking-page-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .ranking-page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--theme-text);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .ranking-page-title .icon {
+        width: 40px;
+        height: 40px;
+        background: var(--theme-primary-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 20px;
+    }
+
+    .ranking-page-subtitle {
+        font-size: 14px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Filter section */
+    .filter-section {
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .filter-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--theme-text);
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .filter-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .filter-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        font-weight: 500;
+        min-width: 36px;
+        padding-top: 4px;
+    }
+
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        flex: 1;
+    }
+
+    .filter-option {
+        padding: 4px 10px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        background: var(--theme-background);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+    .filter-option:hover {
+        color: var(--theme-primary);
+        background: rgba(255,107,107,0.08);
+    }
+
+    .filter-option.active {
+        color: #fff;
+        background: var(--theme-primary-gradient);
+        border-color: transparent;
+    }
+
+    /* Ranking content */
+    .ranking-content {
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .ranking-content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .ranking-content-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .ranking-content-tab {
+        padding: 4px 12px;
+        border: 1px solid var(--theme-border);
+        background: var(--theme-background);
+        border-radius: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .ranking-content-tab:hover {
+        border-color: var(--theme-primary);
+        color: var(--theme-primary);
+    }
+
+    .ranking-content-tab.active {
+        background: var(--theme-primary-gradient);
+        border-color: transparent;
+        color: #fff;
+    }
+
+    .ranking-content-tab i {
+        font-size: 12px;
+    }
+
+    .ranking-content-tab .ranking-tab-icon {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+    }
+
+    .ranking-update-time {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Card grid */
+    .ranking-card-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 16px;
+    }
+
+    .ranking-card {
+        background: var(--theme-card);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid var(--theme-border);
+    }
+
+    .ranking-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .ranking-card-image {
+        position: relative;
+        padding-top: 150%;
+        overflow: hidden;
+    }
+
+    .ranking-card-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .ranking-card:hover .ranking-card-image img {
+        transform: scale(1.05);
+    }
+
+    .ranking-rank {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 28px;
+        height: 28px;
+        background: rgba(0,0,0,0.7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .ranking-rank.top3 {
+        background: var(--theme-primary-gradient);
+    }
+
+    .ranking-hot {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(255,107,107,0.9);
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .ranking-hot::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .ranking-card-info {
+        padding: 10px;
+    }
+
+    .ranking-card-title {
+        font-size: 13px;
+        color: var(--theme-text);
+        font-weight: 500;
+        margin-bottom: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ranking-card-meta {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    /* Loading state */
+    .ranking-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 20px;
+        min-height: 400px;
+    }
+
+    /* Empty state */
+    .ranking-empty {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .ranking-empty-icon {
+        font-size: 48px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 12px;
+    }
+
+    .ranking-empty-text {
+        font-size: 14px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Pagination */
+    .ranking-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--theme-border);
+    }
+
+    .ranking-page-btn {
+        padding: 8px 16px;
+        border: 1px solid var(--theme-border);
+        background: var(--theme-surface);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        color: var(--theme-text);
+        transition: all 0.2s ease;
+    }
+
+    .ranking-page-btn:hover:not(:disabled) {
+        border-color: var(--theme-primary);
+        color: var(--theme-primary);
+    }
+
+    .ranking-page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .ranking-page-info {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ranking-page-container {
+            padding: 12px;
+        }
+        .ranking-page-title {
+            font-size: 22px;
+        }
+        .filter-section {
+            padding: 12px 16px;
+        }
+        .filter-row {
+            gap: 8px;
+            overflow: hidden;
+        }
+        .filter-label {
+            font-size: 11px;
+            min-width: 32px;
+            padding-top: 5px;
+            flex-shrink: 0;
+        }
+        .filter-options {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 4px;
+        }
+        .filter-options::-webkit-scrollbar {
+            display: none;
+        }
+        .filter-option {
+            padding: 3px 8px;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+        .ranking-card-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .ranking-content {
+            padding: 12px;
+        }
+        .ranking-content-header {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+        }
+        .ranking-content-tab {
+            padding: 3px 10px;
+            font-size: 11px;
+            border-radius: 12px;
+        }
+        .ranking-content-tab i {
+            font-size: 11px;
+        }
+        .ranking-content-tab .ranking-tab-icon {
+            width: 12px;
+            height: 12px;
+        }
+        .ranking-update-time {
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ranking-card-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .ranking-card-info {
+            padding: 6px;
+        }
+        .ranking-card-title {
+            font-size: 11px;
+        }
+        .ranking-card-image {
+            padding-top: 140%;
+        }
+    }
+
+    /* Footer styles */
+    .footerBox {
+        background: var(--theme-surface);
+        border-top: 1px solid var(--theme-border);
+        padding: 30px 20px;
+        margin-top: 40px;
+    }
+    
+    .footerBox .box {
+        max-width: 1080px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .footerBox .box p {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        line-height: 1.8;
+        margin: 4px 0;
+    }
+    
+    .footerBox .box a {
+        color: var(--theme-text-secondary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .footerBox .box a:hover {
+        color: var(--theme-primary);
+    }
+    
+    @media (max-width: 1024px) {
+        .footerBox .box {
+            width: 100%;
+        }
+    }
+    
+    /* 手机端导航抽屉 - 紧凑样式 */
+    .nav-drawer .el-dialog__header {
+        display: none;
+    }
+    .nav-drawer .el-dialog__body {
+        padding: 0;
+    }
+    
+    /* 联系我们弹窗 - 防止初始加载时显示 */
+    .qrcode-dialog {
+        display: none;
+    }
+    .el-overlay .qrcode-dialog {
+        display: block;
+    }
+    .nav-drawer-content {
+        background: var(--theme-surface);
+    }
+    .nav-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+    .nav-drawer-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+    .nav-drawer-close {
+        font-size: 16px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    .nav-drawer-close:hover {
+        background: var(--theme-background);
+        color: var(--theme-text);
+    }
+    .nav-drawer-menu {
+        padding: 8px;
+    }
+    .nav-drawer-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .nav-drawer-item:last-child {
+        margin-bottom: 0;
+    }
+    .nav-drawer-item:hover {
+        background: var(--theme-background);
+    }
+    .nav-drawer-item.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+    
+    /* 后台配置的外链样式 - 手机端抽屉 */
+    .nav-drawer-menu > a {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+    .nav-drawer-menu > a:last-child {
+        margin-bottom: 0;
+    }
+    .nav-drawer-menu > a:hover,
+    .nav-drawer-menu > a.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+</style>
+</head>
+
+<body>
+    <div class="headBg" style="background-image: url({$config.home_bg});display:none;"></div>
+    <div id="app" v-cloak>
+
+        <!-- 顶部导航栏 -->
+        <div class="top-nav">
+            <div class="top-nav-box">
+                <a href="/" class="top-nav-logo">
+                    {notempty name="config.logo"}
+                    <img class="logo-img" src="{$config.logo}" alt="{$config.app_name}">
+                    {else/}
+                    <div class="logo-placeholder">MS</div>
+                    {/notempty}
+                    <div class="logo-text">
+                        <div class="logo-title-row">
+                            <span class="logo-name">{$config.app_name|default='妙搜云'}</span>
+                            <span class="logo-version">Ver2.1</span>
+                        </div>
+                        <span class="logo-subtitle">{$config.app_description|default='专业网盘资源搜索分享平台'}</span>
+                    </div>
+                </a>
+                
+                <div class="top-nav-menu">
+                    {notempty name="config.app_links"}
+                        {$config.app_links|raw}
+                    {else/}
+                        <a href="/" class="nav-menu-item">搜索</a>
+                        <a href="/ranking" class="nav-menu-item active">热播榜</a>
+                        <a href="/latest" class="nav-menu-item">最近更新</a>
+                        <div class="nav-menu-item" @click="qcodeVisible = true">联系我们</div>
+                    {/notempty}
+                </div>
+                
+                <div class="top-nav-actions">
+                    <!-- 主题切换 -->
+                    <div class="theme-switcher" ref="themeSwitcherRef">
+                        <div class="theme-switcher-btn" @click.stop="toggleThemeDropdown" title="切换主题">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </div>
+                        <div class="theme-dropdown" v-show="showThemeDropdown">
+                            <div class="theme-option" :class="{active: currentTheme === 'red'}" @click="switchTheme('red')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);"></span>
+                                <span class="theme-name">暖红</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'blue'}" @click="switchTheme('blue')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #4a90e2 0%, #5fa3f0 100%);"></span>
+                                <span class="theme-name">海洋蓝</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'green'}" @click="switchTheme('green')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"></span>
+                                <span class="theme-name">森林绿</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'dark'}" @click="switchTheme('dark')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);"></span>
+                                <span class="theme-name">暗夜黑</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-menu-icon" @click="drawer = true">
+                        <svg style="width: 20px; height: 20px; color: var(--theme-text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 群二维码弹窗 -->
+        <el-dialog v-if="qcodeVisible" v-model="qcodeVisible" width="300" title="联系我们" custom-class="qrcode-dialog" :style="{ backgroundColor: '#fff' }">
+            <template #header>
+                <div style="background: #fff; padding: 15px; font-weight: bold; border-bottom: 1px solid #eee;">联系我们</div>
+            </template>
+            <div style="text-align: center; padding: 20px; background: #fff;">
+                {notempty name="config.qcode"}
+                <img src="{$config.qcode}" style="width: 100%; border-radius: 8px; display: block; background: #f5f5f5;"/>
+                {/notempty}
+                <p style="margin-top: 15px; color: #666; font-size: 14px;">{notempty name="config.contact_desc"}{$config.contact_desc}{else/}欢迎联系我们，获取更多资源{/notempty}</p>
+                <div style="margin-top: 12px; text-align: left; color: #333; font-size: 14px; line-height: 2.2;">
+                    {notempty name="config.contact_qq"}
+                    <div>QQ：<a href="tencent://message/?uin={$config.contact_qq}" target="_blank" style="color:#409eff;">{$config.contact_qq}</a></div>
+                    {/notempty}
+                    {notempty name="config.contact_wechat"}
+                    <div>微信：<span>{$config.contact_wechat}</span></div>
+                    {/notempty}
+                    {notempty name="config.contact_qqgroup"}
+                    <div>QQ群：<span>{$config.contact_qqgroup}</span></div>
+                    {/notempty}
+                    {notempty name="config.contact_phone"}
+                    <div>电话：<a href="tel:{$config.contact_phone}" style="color:#409eff;">{$config.contact_phone}</a></div>
+                    {/notempty}
+                </div>
+            </div>
+        </el-dialog>
+        
+        <!-- 手机端导航菜单 -->
+        <el-dialog v-if="drawer" v-model="drawer" width="200" center custom-class="nav-drawer" :show-close="false">
+            <div class="nav-drawer-content">
+                <div class="nav-drawer-header">
+                    <span class="nav-drawer-title">{$config.app_name|default='妙搜云'}</span>
+                    <span class="nav-drawer-close" @click="drawer = false">
+                        <svg style="width: 16px; height: 16px; color: var(--theme-text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-drawer-menu">
+                    {notempty name="config.app_links"}
+                        {$config.app_links|raw}
+                    {else/}
+                        <a href="/" class="nav-drawer-item">搜索</a>
+                        <a href="/ranking" class="nav-drawer-item active">热播榜</a>
+                        <a href="/latest" class="nav-drawer-item">最近更新</a>
+                        <div class="nav-drawer-item" @click="qcodeVisible = true; drawer = false">联系我们</div>
+                    {/notempty}
+                </div>
+            </div>
+        </el-dialog>
+
+        {notempty name="config.ad_list_top"}
+        <div class="ad-box">{$config.ad_list_top|raw}</div>
+        {/notempty}
+        <div class="ranking-page-container">
+            <!-- Filter section -->
+            <div class="filter-section">
+                <div class="filter-section-title">筛选榜单</div>
+                <!-- Category -->
+                <div class="filter-row">
+                    <span class="filter-label">分类</span>
+                    <div class="filter-options">
+                        <span class="filter-option"
+                              v-for="item in filterOptions.channel"
+                              :key="item.value"
+                              :class="{active: currentFilters.channel === item.value}"
+                              @click="setFilter('channel', item.value)">
+                            {{item.label}}
+                        </span>
+                    </div>
+                </div>
+                <!-- Area -->
+                <div class="filter-row">
+                    <span class="filter-label">地区</span>
+                    <div class="filter-options">
+                        <span class="filter-option"
+                              v-for="item in filterOptions.area"
+                              :key="item.value"
+                              :class="{active: currentFilters.area === item.value}"
+                              @click="setFilter('area', item.value)">
+                            {{item.label}}
+                        </span>
+                    </div>
+                </div>
+                <!-- Year -->
+                <div class="filter-row">
+                    <span class="filter-label">年份</span>
+                    <div class="filter-options">
+                        <span class="filter-option"
+                              v-for="item in filterOptions.year"
+                              :key="item.value"
+                              :class="{active: currentFilters.year === item.value}"
+                              @click="setFilter('year', item.value)">
+                            {{item.label}}
+                        </span>
+                    </div>
+                </div>
+                <!-- Genre -->
+                <div class="filter-row" v-if="currentFilters.channel === 'Movie' || currentFilters.channel === 'TV' || currentFilters.channel === '电影' || currentFilters.channel === '电视剧'">
+                    <span class="filter-label">类型</span>
+                    <div class="filter-options">
+                        <span class="filter-option"
+                              v-for="item in filterOptions.cate"
+                              :key="item.value"
+                              :class="{active: currentFilters.cate === item.value}"
+                              @click="setFilter('cate', item.value)">
+                            {{item.label}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking content -->
+            <div class="ranking-content">
+                <div class="ranking-content-header">
+                    <div class="ranking-content-tabs">
+                        <span class="ranking-content-tab"
+                              :class="{active: currentRankType === 'Hot'}"
+                              @click="switchRankType('Hot')">
+                            <svg class="ranking-tab-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4068"><path d="M756.184615 346.584615l-74.830769 70.892308s0-283.569231-244.184615-378.092308c0 0-23.630769 259.938462-145.723077 354.461539s-370.215385 378.092308 122.092308 590.769231c0 0-244.184615-259.938462 74.830769-448.984616 0 0-23.630769 94.523077 98.461538 189.046154s0 259.938462 0 259.938462 586.830769-141.784615 169.353846-638.03077z" p-id="4069"></path></svg>热播榜
+                        </span>
+                        <span class="ranking-content-tab"
+                              :class="{active: currentRankType === 'New'}"
+                              @click="switchRankType('New')">
+                            <svg class="ranking-tab-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M823.995592 0H200.004408c-53.033609 0-95.911846 42.878237-95.911846 95.911846v719.90303h0.564187v208.185124l208.185124-208.185124H823.995592c53.033609 0 95.911846-42.878237 95.911846-95.911846V95.911846c0-53.033609-42.878237-95.911846-95.911846-95.911846z m-122.42865 635.839118H626.530028C538.516804 506.64022 473.635262 411.292562 432.449587 349.231956c-16.361433-27.645179-29.901928-54.161983-41.749862-79.550413h-2.25675c4.513499 26.516804 6.770248 56.418733 6.770248 90.269972v275.323416H322.433058V179.975758h77.293664c86.884848 128.070523 150.073829 222.853994 189.566942 284.350413 16.361433 23.695868 31.030303 50.77686 44.006611 81.807162v-2.256749c-2.820937-29.337741-4.513499-56.418733-4.513498-81.807163v-282.093663h72.780165v455.86336z"></path></svg>新片榜
+                        </span>
+                        <span class="ranking-content-tab"
+                              :class="{active: currentRankType === 'Top'}"
+                              @click="switchRankType('Top')">
+                            <svg class="ranking-tab-icon" viewBox="0 0 1042 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M972.8 405.942857c-3.657143-10.971429-10.971429-18.285714-21.942857-23.771428L707.657143 292.571429 546.742857 87.771429c-14.628571-18.285714-43.885714-18.285714-58.514286 0L327.314286 292.571429 84.114286 382.171429c-10.971429 3.657143-18.285714 12.8-21.942857 23.771428-3.657143 10.971429-1.828571 21.942857 3.657142 31.085714l144.457143 217.6 9.142857 261.485715c0 10.971429 5.485714 21.942857 14.628572 27.428571 9.142857 7.314286 20.114286 9.142857 31.085714 5.485714L515.657143 877.714286l250.514286 71.314285c3.657143 1.828571 7.314286 1.828571 9.142857 1.828572 7.314286 0 14.628571-1.828571 21.942857-7.314286 9.142857-7.314286 14.628571-16.457143 14.628571-27.428571l9.142857-261.485715 144.457143-217.6c9.142857-9.142857 10.971429-20.114286 7.314286-31.085714z"></path></svg>好评榜
+                        </span>
+                    </div>
+                    <div class="ranking-update-time">更新日期: 2026-04-18</div>
+                </div>
+
+                <!-- Loading state -->
+                <div class="ranking-loading" v-if="loading">
+                    <svg class="icon-spin" style="width: 32px; height: 32px; color: var(--theme-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                    </svg>
+                </div>
+
+                <!-- Empty state -->
+                <div class="ranking-empty" v-else-if="rankingData.length === 0">
+                    <div class="ranking-empty-icon">
+                        <svg style="width: 48px; height: 48px; color: var(--theme-text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                        </svg>
+                    </div>
+                    <div class="ranking-empty-text">No data available</div>
+                </div>
+
+                <!-- Card grid -->
+                <div class="ranking-card-grid" v-else>
+                    <div class="ranking-card" v-for="(item, index) in rankingData" :key="index" @click="goToSearch(item.title)">
+                        <div class="ranking-card-image">
+                            <img :src="item.src" :alt="item.title" onerror="this.src='__STATIC__/news/common/static/images/default-poster.jpg'">
+                            <div class="ranking-rank" :class="{top3: item.ranking <= 3}">{{item.ranking}}</div>
+                            <div class="ranking-hot" v-if="item.hot_score">
+                                {{formatHotScore(item.hot_score)}}
+                            </div>
+                        </div>
+                        <div class="ranking-card-info">
+                            <div class="ranking-card-title">{{item.title}}</div>
+                            <div class="ranking-card-meta">
+                                <span>{{item.year}}</span>
+                                <span>{{item.area}}</span>
+                                <span v-if="item.score_avg && item.score_avg !== '0.0'">{{item.score_avg}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="ranking-pagination" v-if="totalPages > 1">
+                    <button class="ranking-page-btn"
+                            :disabled="currentPage === 1"
+                            @click="changePage(currentPage - 1)">
+                        上一页
+                    </button>
+                    <span class="ranking-page-info">{{currentPage}} / {{totalPages}}</span>
+                    <button class="ranking-page-btn"
+                            :disabled="currentPage === totalPages"
+                            @click="changePage(currentPage + 1)">
+                        下一页
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <template v-if="!loading && rankingData.length > 0">
+        {notempty name="config.ad_list_bottom"}
+        <div class="ad-box">{$config.ad_list_bottom|raw}</div>
+        {/notempty}
+        {include file="news/common/foot"}
+        </template>
+    </div>
+
+    <script src="__STATIC__/news/common/static/js/vue.global.min.js"></script>
+    <script src="__STATIC__/news/common/static/js/index.full.min.js"></script>
+    <script src="__STATIC__/news/common/static/js/axios.min.js"></script>
+    <script type="text/javascript">
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        const app = createApp({
+            setup() {
+                const currentTheme = ref('red');
+                const showThemeDropdown = ref(false);
+                const themeSwitcherRef = ref(null);
+                const layerVisible = ref(false);
+                const drawer = ref(false);
+                const qcodeVisible = ref(false);
+
+                const filterOptions = ref({
+                    channel: [
+                        {label: '电影', value: 'Movie'},
+                        {label: '电视剧', value: 'TV'},
+                        {label: '动漫', value: 'Anime'},
+                        {label: '综艺', value: 'Show'},
+                        {label: '短剧', value: 'Short'}
+                    ],
+                    area: [
+                        {label: '全部', value: 'All'},
+                        {label: '大陆', value: 'China'},
+                        {label: '中国香港', value: 'HongKong'},
+                        {label: '中国台湾', value: 'Taiwan'},
+                        {label: '美国', value: 'USA'},
+                        {label: '韩国', value: 'Korea'},
+                        {label: '日本', value: 'Japan'},
+                        {label: '欧洲', value: 'Europe'},
+                        {label: '印度', value: 'India'},
+                        {label: '泰国', value: 'Thailand'},
+                        {label: '丹麦', value: 'Denmark'},
+                        {label: '英国', value: 'UK'},
+                        {label: '其他', value: 'Other'}
+                    ],
+                    cate: [
+                        {label: '全部', value: 'All'},
+                        {label: '喜剧', value: 'Comedy'},
+                        {label: '爱情', value: 'Romance'},
+                        {label: '动作', value: 'Action'},
+                        {label: '科幻', value: 'SciFi'},
+                        {label: '悬疑', value: 'Suspense'},
+                        {label: '剧情', value: 'Drama'},
+                        {label: '犯罪', value: 'Crime'},
+                        {label: '惊悚', value: 'Thriller'},
+                        {label: '冒险', value: 'Adventure'},
+                        {label: '历史', value: 'History'},
+                        {label: '奇幻', value: 'Fantasy'},
+                        {label: '恐怖', value: 'Horror'},
+                        {label: '家庭', value: 'Family'},
+                        {label: '战争', value: 'War'},
+                        {label: '武侠', value: 'MartialArts'},
+                        {label: '灾难', value: 'Disaster'},
+                        {label: '西部', value: 'Western'},
+                        {label: '运动', value: 'Sports'},
+                        {label: '古装', value: 'Costume'}
+                    ],
+                    year: [
+                        {label: '全部', value: 'All'},
+                        {label: '2026', value: '2026'},
+                        {label: '2025', value: '2025'},
+                        {label: '2024', value: '2024'},
+                        {label: '2023', value: '2023'},
+                        {label: '2022', value: '2022'},
+                        {label: '2021', value: '2021'},
+                        {label: '2020', value: '2020'},
+                        {label: '2019', value: '2019'},
+                        {label: '10年代', value: '2010s'},
+                        {label: '00年代', value: '2000s'},
+                        {label: '90年代', value: '1990s'},
+                        {label: '80年代', value: '1980s'},
+                        {label: '70年代', value: '1970s'},
+                        {label: '60年代', value: '1960s'},
+                        {label: '更早', value: 'Earlier'}
+                    ]
+                });
+
+                const currentFilters = ref({
+                    channel: 'Movie',
+                    area: 'All',
+                    cate: 'All',
+                    year: 'All'
+                });
+
+                const currentRankType = ref('Hot');
+                
+                // Map English values to Chinese for API
+                const channelMap = {
+                    'Movie': '电影',
+                    'TV': '电视剧',
+                    'Anime': '动漫',
+                    'Show': '综艺',
+                    'Short': '短剧'
+                };
+                
+                const rankTypeMap = {
+                    'Hot': '热搜榜',
+                    'New': '新片榜',
+                    'Top': '好评榜'
+                };
+
+                // Map English area values to Chinese for API
+                const areaMap = {
+                    'All': '全部',
+                    'China': '大陆',
+                    'HongKong': '中国香港',
+                    'Taiwan': '中国台湾',
+                    'USA': '美国',
+                    'Korea': '韩国',
+                    'Japan': '日本',
+                    'Europe': '欧洲',
+                    'India': '印度',
+                    'Thailand': '泰国',
+                    'Denmark': '丹麦',
+                    'UK': '英国',
+                    'Other': '其他'
+                };
+
+                // Map English cate values to Chinese for API
+                const cateMap = {
+                    'All': '全部',
+                    'Comedy': '喜剧',
+                    'Romance': '爱情',
+                    'Action': '动作',
+                    'SciFi': '科幻',
+                    'Suspense': '悬疑',
+                    'Drama': '剧情',
+                    'Crime': '犯罪',
+                    'Thriller': '惊悚',
+                    'Adventure': '冒险',
+                    'History': '历史',
+                    'Fantasy': '奇幻',
+                    'Horror': '恐怖',
+                    'Family': '家庭',
+                    'War': '战争',
+                    'MartialArts': '武侠',
+                    'Disaster': '灾难',
+                    'Western': '西部',
+                    'Sports': '运动',
+                    'Costume': '古装'
+                };
+
+                // Map year values to API expected format
+                const yearMap = {
+                    'All': '全部',
+                    '2010s': '2010年代',
+                    '2000s': '2000年代',
+                    '1990s': '90年代',
+                    '1980s': '80年代',
+                    '1970s': '70年代',
+                    '1960s': '60年代',
+                    'Earlier': '更早'
+                };
+
+                const rankingData = ref([]);
+                const loading = ref(true);
+                const currentPage = ref(1);
+                const pageSize = ref(24);
+                const totalItems = ref(0);
+
+                const totalPages = computed(() => {
+                    return Math.ceil(totalItems.value / pageSize.value) || 1;
+                });
+
+                const initTheme = () => {
+                    const savedTheme = localStorage.getItem('app-theme') || 'red';
+                    currentTheme.value = savedTheme;
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                };
+
+                const switchTheme = (theme) => {
+                    currentTheme.value = theme;
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('app-theme', theme);
+                    showThemeDropdown.value = false;
+                };
+
+                const toggleThemeDropdown = () => {
+                    showThemeDropdown.value = !showThemeDropdown.value;
+                };
+
+                const closeThemeDropdown = (e) => {
+                    if (themeSwitcherRef.value && !themeSwitcherRef.value.contains(e.target)) {
+                        showThemeDropdown.value = false;
+                    }
+                };
+
+                const setFilter = (type, value) => {
+                    currentFilters.value[type] = value;
+                    currentPage.value = 1;
+                    loadRankingData();
+                };
+
+                const switchRankType = (type) => {
+                    currentRankType.value = type;
+                    currentPage.value = 1;
+                    loadRankingData();
+                };
+
+                const changePage = (page) => {
+                    if (page < 1 || page > totalPages.value) return;
+                    currentPage.value = page;
+                    loadRankingData();
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                };
+
+                const formatHotScore = (score) => {
+                    const num = parseInt(score);
+                    if (num >= 10000) {
+                        return (num / 10000).toFixed(1) + 'w';
+                    }
+                    return num.toLocaleString();
+                };
+
+                const goToSearch = (title) => {
+                    if (title) {
+                        window.location.href = '/?wd=' + encodeURIComponent(title);
+                    }
+                };
+
+                const loadRankingData = async () => {
+                    loading.value = true;
+                    try {
+                        const params = {
+                            channel: channelMap[currentFilters.value.channel] || currentFilters.value.channel,
+                            rank_type: rankTypeMap[currentRankType.value] || currentRankType.value,
+                            area: areaMap[currentFilters.value.area] || currentFilters.value.area,
+                            cate: cateMap[currentFilters.value.cate] || currentFilters.value.cate,
+                            year: yearMap[currentFilters.value.year] || currentFilters.value.year,
+                            page: currentPage.value,
+                            page_size: pageSize.value,
+                            t: Date.now()
+                        };
+
+                        const res = await axios.get('/api/tool/ranking', { params });
+                        if (res.data && res.data.code === 200 && res.data.data) {
+                            const responseData = res.data.data;
+                            if (Array.isArray(responseData)) {
+                                rankingData.value = responseData;
+                                totalItems.value = responseData.length;
+                            } else if (typeof responseData === 'object' && responseData.data) {
+                                rankingData.value = responseData.data;
+                                totalItems.value = responseData.total || responseData.data.length;
+                            } else {
+                                rankingData.value = [];
+                                totalItems.value = 0;
+                            }
+                        } else {
+                            rankingData.value = [];
+                            totalItems.value = 0;
+                        }
+                    } catch (error) {
+                        rankingData.value = [];
+                        totalItems.value = 0;
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                onMounted(() => {
+                    initTheme();
+                    loadRankingData();
+                    document.addEventListener('click', closeThemeDropdown);
+                });
+
+                return {
+                    currentTheme,
+                    showThemeDropdown,
+                    themeSwitcherRef,
+                    layerVisible,
+                    drawer,
+                    qcodeVisible,
+                    filterOptions,
+                    currentFilters,
+                    currentRankType,
+                    rankingData,
+                    loading,
+                    currentPage,
+                    totalPages,
+                    switchTheme,
+                    toggleThemeDropdown,
+                    setFilter,
+                    switchRankType,
+                    changePage,
+                    formatHotScore,
+                    goToSearch
+                };
+            }
+        });
+
+        app.use(ElementPlus);
+        app.mount('#app');
+        document.documentElement.removeAttribute('data-page-loading');
+
+        // 动态设置导航 active 状态（兼容后台自定义链接，纯原生 JS，所有页面通用）
+        (function() {
+            function setNavActive() {
+                var currentPath = window.location.pathname;
+                // 顶部导航
+                document.querySelectorAll('.top-nav-menu a').forEach(function(link) {
+                    var href = link.getAttribute('href') || '';
+                    if (href === currentPath || (href !== '/' && currentPath.indexOf(href) === 0)) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                // 手机端抽屉导航
+                document.querySelectorAll('.nav-drawer-menu a').forEach(function(link) {
+                    var href = link.getAttribute('href') || '';
+                    if (href === currentPath || (href !== '/' && currentPath.indexOf(href) === 0)) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setNavActive);
+            } else {
+                setNavActive();
+            }
+        })();
+
+        // 全局显示联系我们弹窗（供后台自定义导航调用）
+        function showQcode() {
+            // 尝试通过 Vue 实例打开弹窗
+            var appEl = document.querySelector('#app');
+            if (appEl && appEl.__vue_app__) {
+                var vm = appEl.__vue_app__._instance;
+                if (vm && vm.setupState && typeof vm.setupState.qcodeVisible !== 'undefined') {
+                    vm.setupState.qcodeVisible = true;
+                    return;
+                }
+                if (vm && vm.ctx && typeof vm.ctx.qcodeVisible !== 'undefined') {
+                    vm.ctx.qcodeVisible = true;
+                    return;
+                }
+            }
+            // 降级：直接查找 el-dialog 并强制显示
+            var overlays = document.querySelectorAll('.el-overlay');
+            for (var i = 0; i < overlays.length; i++) {
+                var dialog = overlays[i].querySelector('.qrcode-dialog, .el-dialog');
+                if (dialog || overlays[i].innerHTML.includes('联系我们')) {
+                    overlays[i].style.display = 'block';
+                    return;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

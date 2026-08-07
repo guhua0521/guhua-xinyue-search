@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页预览 - 网盘资源搜索</title>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_3299338_2a7k3i8h9q9.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        /* 导航栏 */
+        .headerBox {
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 68px;
+            z-index: 99;
+        }
+        
+        .headerBox .box {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+        }
+        
+        .logoBox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logoBox .logo {
+            height: 36px;
+            width: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .logoBox .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .logoBox .version {
+            font-size: 11px;
+            color: #ff6b6b;
+            background: #fff0f0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        
+        /* 中间导航 */
+        .center-navs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+        
+        .center-navs .nav-item {
+            padding: 8px 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .center-navs .nav-item:hover,
+        .center-navs .nav-item.active {
+            color: #ff6b6b;
+            background: #fff0f0;
+        }
+        
+        /* 右侧按钮 */
+        .navs {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            border: 1px solid #e8e8e8;
+        }
+        
+        .filter-btn:hover {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+        
+        .theme-toggle:hover {
+            background: #f5f5f5;
+            color: #ff6b6b;
+        }
+        
+        .headerKox {
+            height: 68px;
+        }
+        
+        /* 首页新样式 */
+        .home-container {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: calc(100vh - 68px - 100px);
+        }
+
+        .home-main {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* 左侧搜索区域 */
+        .search-section {
+            flex: 1;
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .search-header {
+            margin-bottom: 24px;
+        }
+
+        .search-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-title .highlight {
+            color: #f5a623;
+        }
+
+        .search-subtitle {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input-box {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .search-input-box:focus-within {
+            border-color: #ff6b6b;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+        }
+
+        .search-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 20px;
+        }
+
+        .search-input-box input {
+            flex: 1;
+            height: 50px;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: #333;
+            outline: none;
+        }
+
+        .search-input-box input::placeholder {
+            color: #999;
+        }
+
+        .search-btn {
+            height: 44px;
+            padding: 0 28px;
+            margin: 3px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+
+        /* 热词区域 */
+        .hot-keywords {
+            margin-top: 20px;
+        }
+
+        .hot-keywords-label {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .hot-keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hot-keyword {
+            padding: 6px 14px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .hot-keyword:hover {
+            background: #fff0f0;
+            color: #ff6b6b;
+            border-color: #ffcccc;
+        }
+
+        /* 提示文字 */
+        .search-tips {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 12px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        /* 右侧信息卡片 */
+        .info-section {
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .info-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .info-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .info-card-more {
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* 资源缺失卡片 */
+        .resource-missing {
+            background: linear-gradient(135deg, #fff8f0 0%, #fff0f0 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .resource-missing-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .resource-missing-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .resource-missing-desc {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
+        .resource-missing-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .resource-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .resource-btn-primary {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: #fff;
+        }
+
+        .resource-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .resource-btn-secondary {
+            background: #fff;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+
+        .resource-btn-secondary:hover {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        /* 内容列表区域 */
+        .content-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .content-block {
+            flex: 1;
+            min-width: 280px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .content-block-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .content-block-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .content-block-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .content-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .content-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .content-item:hover {
+            background: #f8f9fa;
+        }
+
+        .content-rank {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            background: #f5f5f5;
+        }
+
+        .content-rank.top1 { background: #ff4d4f; color: #fff; }
+        .content-rank.top2 { background: #ff7a45; color: #fff; }
+        .content-rank.top3 { background: #ffa940; color: #fff; }
+
+        .content-title {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .content-item:hover .content-title {
+            color: #ff6b6b;
+        }
+
+        /* 页脚 */
+        .footerBox {
+            background: #fff;
+            border-top: 1px solid #f0f0f0;
+            padding: 30px 20px;
+            margin-top: 40px;
+        }
+        
+        .footerBox .box {
+            width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .footerBox .box p {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.8;
+            margin: 4px 0;
+        }
+        
+        .footerBox .box a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .footerBox .box a:hover {
+            color: #ff6b6b;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .headerBox .box,
+            .home-container,
+            .footerBox .box {
+                width: 100%;
+                padding: 20px;
+            }
+            .home-main {
+                flex-direction: column;
+            }
+            .info-section {
+                width: 100%;
+            }
+            .center-navs {
+                display: none;
+            }
+            .filter-btn {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-section {
+                padding: 24px;
+            }
+            .search-title {
+                font-size: 22px;
+            }
+            .stats-grid {
+                gap: 10px;
+            }
+            .stat-value {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="headerBox">
+        <div class="box">
+            <a href="/" class="logoBox">
+                <div class="logo">MS</div>
+                <div class="title">妙搜云</div>
+                <span class="version">Ver2.0</span>
+            </a>
+            
+            <div class="center-navs">
+                <a href="/" class="nav-item active">搜索</a>
+                <a href="/ranking.html" class="nav-item">热播榜</a>
+                <div class="nav-item">提交需求</div>
+                <div class="nav-item">提交资源</div>
+            </div>
+            
+            <div class="navs">
+                <div class="filter-btn">
+                    <i class="iconfont icon-shaixuan"></i>
+                    筛选
+                </div>
+                <div class="theme-toggle">
+                    <i class="iconfont icon-yueliang"></i>
+                </div>
+                <div class="iconfont icon-caidan" style="font-size: 20px; cursor: pointer;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="headerKox"></div>
+
+    <!-- 主内容 -->
+    <div class="home-container">
+        <!-- 主搜索区域 -->
+        <div class="home-main">
+            <!-- 左侧搜索 -->
+            <div class="search-section">
+                <div class="search-header">
+                    <div class="search-title">
+                        一站式 <span class="highlight">网盘资源搜索</span>
+                    </div>
+                    <div class="search-subtitle">
+                        聚合多个网盘来源，快速找到可用链接；同步提供第三方热播榜参考。
+                    </div>
+                </div>
+                
+                <div class="search-box-wrapper">
+                    <div class="search-input-box">
+                        <div class="search-icon">
+                            <i class="iconfont icon-sousuo"></i>
+                        </div>
+                        <input type="text" placeholder="搜索：片名 / 关键词 / 主演 / 资源名称">
+                        <button class="search-btn">
+                            <i class="iconfont icon-sousuo"></i>
+                            搜索资源
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 热词 -->
+                <div class="hot-keywords">
+                    <div class="hot-keywords-label">热词</div>
+                    <div class="hot-keywords-list">
+                        <span class="hot-keyword">逐玉</span>
+                        <span class="hot-keyword">飞驰人生3</span>
+                        <span class="hot-keyword">好好的时光</span>
+                        <span class="hot-keyword">你好1983</span>
+                        <span class="hot-keyword">纯真年代的爱情</span>
+                        <span class="hot-keyword">飞驰人生</span>
+                        <span class="hot-keyword">剑来</span>
+                        <span class="hot-keyword">仙逆</span>
+                        <span class="hot-keyword">成何体统</span>
+                        <span class="hot-keyword">火影忍者</span>
+                        <span class="hot-keyword">我的山与海</span>
+                        <span class="hot-keyword">白日提灯</span>
+                    </div>
+                </div>
+                
+                <div class="search-tips">
+                    提示：本站仅提供资源索引与搜索服务，链接来源于互联网公开信息，内容归属以实际页面为准。完全免费，请勿相信广告。
+                </div>
+            </div>
+            
+            <!-- 右侧信息卡片 -->
+            <div class="info-section">
+                <!-- 今日概览 -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span class="info-card-title">今日概览</span>
+                        <span class="info-card-more">数据统计</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">今日搜索</div>
+                            <div class="stat-value">1.0W</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">总搜索量</div>
+                            <div class="stat-value">102.3W</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">加载时间</div>
+                            <div class="stat-value">251ms</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 资源缺失 -->
+                <div class="info-card" style="background: linear-gradient(135deg, #fff8f0 0%, #fff0f0 100%);">
+                    <div class="resource-missing" style="background: transparent; padding: 0;">
+                        <div class="resource-missing-icon">
+                            <i class="iconfont icon-xin"></i>
+                        </div>
+                        <div class="resource-missing-title">资源缺失</div>
+                        <div class="resource-missing-desc">提交链接/关键词，我们会优先收录。</div>
+                        <div class="resource-missing-btns">
+                            <button class="resource-btn resource-btn-secondary">提交资源</button>
+                            <button class="resource-btn resource-btn-primary">提交需求</button>
+                        </div>
+                    </div>
+                    <div class="search-tips" style="margin-top: 16px; padding-top: 16px; text-align: center;">
+                        提示：本站仅做资源索引，完全免费，请勿相信广告，谨防上当受骗。
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 内容列表区域 -->
+        <div class="content-section">
+            <div class="content-block">
+                <div class="content-block-header">
+                    <div class="content-block-icon" style="background: #e6f7ff; color: #1890ff;">
+                        <i class="iconfont icon-shijian"></i>
+                    </div>
+                    <span class="content-block-title">最新更新</span>
+                </div>
+                <div class="content-list">
+                    <a href="#" class="content-item">
+                        <span class="content-rank top1">1</span>
+                        <span class="content-title">庆余年第二季</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank top2">2</span>
+                        <span class="content-title">与凤行</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank top3">3</span>
+                        <span class="content-title">繁花</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">4</span>
+                        <span class="content-title">三大队</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">5</span>
+                        <span class="content-title">一念关山</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">6</span>
+                        <span class="content-title">神隐</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">7</span>
+                        <span class="content-title">鸣龙少年</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">8</span>
+                        <span class="content-title">很想很想你</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">9</span>
+                        <span class="content-title">脱轨</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">10</span>
+                        <span class="content-title">南海归墟</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <div class="content-block-header">
+                    <div class="content-block-icon" style="background: #fff2e8; color: #fa8c16;">
+                        <i class="iconfont icon-remen"></i>
+                    </div>
+                    <span class="content-block-title">热播榜</span>
+                </div>
+                <div class="content-list">
+                    <a href="#" class="content-item">
+                        <span class="content-rank top1">1</span>
+                        <span class="content-title">热辣滚烫</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank top2">2</span>
+                        <span class="content-title">飞驰人生2</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank top3">3</span>
+                        <span class="content-title">第二十条</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">4</span>
+                        <span class="content-title">熊出没·逆转时空</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">5</span>
+                        <span class="content-title">周处除三害</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">6</span>
+                        <span class="content-title">沙丘2</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">7</span>
+                        <span class="content-title">功夫熊猫4</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">8</span>
+                        <span class="content-title">哥斯拉大战金刚2</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">9</span>
+                        <span class="content-title">草木人间</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">10</span>
+                        <span class="content-title">你想活出怎样的人生</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <div class="content-block-header">
+                    <div class="content-block-icon" style="background: #f6ffed; color: #52c41a;">
+                        <i class="iconfont icon-dianshi"></i>
+                    </div>
+                    <span class="content-block-title">电视剧榜</span>
+                </div>
+                <div class="content-list">
+                    <a href="#" class="content-item">
+                        <span class="content-rank top1">1</span>
+                        <span class="content-title">追风者</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank top2">2</span>
+                        <span class="content-title">承欢记</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank top3">3</span>
+                        <span class="content-title">城中之城</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">4</span>
+                        <span class="content-title">惜花芷</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">5</span>
+                        <span class="content-title">春色寄情人</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">6</span>
+                        <span class="content-title">哈尔滨一九四四</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">7</span>
+                        <span class="content-title">新生</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">8</span>
+                        <span class="content-title">我的阿勒泰</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">9</span>
+                        <span class="content-title">庆余年2</span>
+                    </a>
+                    <a href="#" class="content-item">
+                        <span class="content-rank">10</span>
+                        <span class="content-title">墨雨云间</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <div class="footerBox">
+        <div class="box">
+            <p>本站所有内容均来自互联网分享站点所提供的公开引用资源，未提供资源上传、存储服务</p>
+            <p>
+                Copyright 2024 妙搜云 All Rights Reserved
+                <a href="/sitemap.xml" target="_blank">网站地图</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

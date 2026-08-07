@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{$node.node_title}</title>
+    {include file="common/header"/}
+    <!-- 引入 Fira Sans 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        var adminName = '{$adminInfo['admin_account']}';
+    </script>
+    <style>
+        /* 数据密集型仪表板风格 - 设计系统配色 */
+        :root {
+            --primary-color: #1E40AF;
+            --primary-light: #3B82F6;
+            --accent-color: #F59E0B;
+            --bg-color: #F8FAFC;
+            --text-primary: #1E3A8A;
+            --text-secondary: #475569;
+            --border-color: #E2E8F0;
+            --hover-bg: #EFF6FF;
+            --success-color: #10B981;
+            --danger-color: #EF4444;
+        }
+        
+        body {
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+        }
+        
+        /* 操作按钮区域 - 卡片样式 */
+        .operation-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        
+        .operation-card .el-button {
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .operation-card .el-button--primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .operation-card .el-button--primary:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+        }
+        
+        /* 筛选区域 - 紧凑卡片 */
+        .filter-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        
+        .filter-card .el-form-item {
+            margin-bottom: 0;
+            margin-right: 12px;
+        }
+        
+        .filter-card .el-input__inner,
+        .filter-card .el-select .el-input__inner {
+            border-radius: 6px;
+            border-color: var(--border-color);
+            transition: all 0.2s ease;
+        }
+        
+        .filter-card .el-input__inner:focus,
+        .filter-card .el-select .el-input__inner:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* 表格样式优化 */
+        .el-table {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+        
+        .el-table th {
+            background: linear-gradient(180deg, #F1F5F9 0%, #E2E8F0 100%) !important;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 14px 12px !important;
+        }
+        
+        .el-table td {
+            padding: 12px !important;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        
+        /* 行悬停效果 */
+        .el-table--enable-row-hover .el-table__body tr:hover > td {
+            background-color: var(--hover-bg) !important;
+            transition: background-color 0.15s ease;
+        }
+        
+        /* 浏览量数字样式 */
+        .page-views-cell {
+            font-weight: 600;
+            color: var(--accent-color);
+            font-size: 14px;
+        }
+        
+        /* ID列样式 */
+        .id-cell {
+            font-family: 'Fira Code', monospace;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        /* 资源名称样式 */
+        .title-cell {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        /* 分类标签样式 */
+        .category-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(30, 64, 175, 0.1);
+            color: var(--primary-color);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* 操作链接样式 */
+        .action-link {
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .action-link:hover {
+            transform: scale(1.05);
+        }
+        
+        /* 分页样式 */
+        .page {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .el-pagination.is-background .el-pager li:not(.disabled).active {
+            background-color: var(--primary-color) !important;
+        }
+        
+        .el-pagination.is-background .el-pager li:not(.disabled):hover {
+            color: var(--primary-color);
+        }
+        
+        /* 对话框样式 */
+        .el-dialog {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .el-dialog__header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            padding: 16px 20px;
+            margin: 0;
+        }
+        
+        .el-dialog__title {
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .el-dialog__headerbtn .el-dialog__close {
+            color: #fff;
+        }
+        
+        .el-dialog__headerbtn:hover .el-dialog__close {
+            color: #fff;
+            transform: scale(1.1);
+        }
+        
+        /* 按钮样式统一 */
+        .el-button--primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .el-button--primary:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+        
+        .el-button--success {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .el-button--danger {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        /* 加载动画 */
+        .el-loading-spinner .el-loading-text {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .el-loading-spinner .path {
+            stroke: var(--primary-color);
+        }
+        
+        /* 资源地址链接样式 */
+        .url-link {
+            font-size: 12px;
+            color: var(--primary-color);
+            transition: all 0.2s ease;
+        }
+        
+        .url-link:hover {
+            color: var(--primary-light);
+        }
+        
+        /* 操作按钮容器 */
+        .action-btns {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .action-btns .el-button {
+            padding: 4px 8px;
+            font-size: 13px;
+        }
+        
+        /* 表格斑马纹 */
+        .el-table--striped .el-table__body tr.el-table__row--striped td {
+            background: #FAFBFC;
+        }
+        
+        /* 固定列样式 */
+        .el-table__fixed-right {
+            box-shadow: -2px 0 8px rgba(0,0,0,0.08);
+        }
+        
+        /* 空数据提示 */
+        .el-table__empty-block {
+            padding: 40px 0;
+        }
+        
+        .el-table__empty-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* 排序列样式 */
+        .el-table .sort-caret.ascending {
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .el-table .sort-caret.descending {
+            border-top-color: var(--primary-color);
+        }
+        
+        .el-table .ascending .sort-caret.ascending {
+            border-bottom-color: var(--accent-color);
+        }
+        
+        .el-table .descending .sort-caret.descending {
+            border-top-color: var(--accent-color);
+        }
+        
+        /* 浏览量列表头特殊样式 */
+        .el-table th.is-sortable:hover {
+            background: linear-gradient(180deg, #E2E8F0 0%, #CBD5E1 100%) !important;
+            cursor: pointer;
+        }
+        
+        .el-table th.is-sortable .cell {
+            cursor: pointer;
+        }
+    </style>
+
+    <!-- 操作按钮区域 -->
+    <div class="operation-card">
+        <el-form :inline="true" @submit.native.prevent>
+            <el-form-item>
+                <el-button icon="el-icon-plus" size="small" @click="clickAdd" type="primary">添加资源</el-button>
+                <el-button icon="el-icon-delete" size="small" @click="postMultDelete" type="danger" plain>批量删除</el-button>
+                <el-button icon="el-icon-document-copy" size="small" @click="getExport" plain>导出资源</el-button>
+                <el-button icon="el-icon-upload2" size="small" @click="ImportShow" plain>表格导入</el-button>
+                <el-button icon="el-icon-folder-add" size="small" @click="ImportBatch" plain>批量导入</el-button>
+                <el-button icon="el-icon-edit" size="small" @click="showBatchCategory" plain>批量修改分类</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+    
+    <!-- 筛选区域 -->
+    <div class="filter-card">
+        <el-form :inline="true" @submit.native.prevent>
+        <el-form-item style="width:120px;">
+            <el-select size="small" v-model="search.source_category_id" placeholder="筛选分类">
+                <el-option label="全部分类" value=""></el-option>
+                <el-option v-for="item in category" :key="item.source_category_id" :label="item.name"
+                    :value="item.source_category_id">
+                </el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item style="width:120px;">
+            <el-select size="small" v-model="search.is_type" placeholder="网盘类型">
+                <el-option label="全部网盘" value=""></el-option>
+                <el-option label="夸克" :value="0"></el-option>
+                <el-option label="阿里" :value="1"></el-option>
+                <el-option label="百度" :value="2"></el-option>
+                <el-option label="UC" :value="3"></el-option>
+                <el-option label="迅雷" :value="4"></el-option>
+                <el-option label="123" :value="5"></el-option>
+                <el-option label="115" :value="6"></el-option>
+                <el-option label="天翼" :value="7"></el-option>
+                <el-option label="移动" :value="8"></el-option>
+                <el-option label="磁力" :value="9"></el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item style="width:120px;">
+            <el-select size="small" v-model="search.account_name" placeholder="添加人" filterable clearable>
+                <el-option v-for="item in accountList" :key="item" :label="item" :value="item">
+                </el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item style="width:120px;">
+            <el-select size="small" v-model="search.is_time" placeholder="资源类型">
+                <el-option label="永久资源" :value="0"></el-option>
+                <el-option label="临时资源" :value="1"></el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item>
+            <el-input placeholder="输入关键词搜索" size="small" v-model="search.keyword"
+                @keyup.enter.native="getList_search"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="small" @click="getList_search">搜索
+            </el-button>
+            <el-button icon="el-icon-refresh-left" size="small" @click="getList_search(0)" plain>重置</el-button>
+        </el-form-item>
+        </el-form>
+    </div>
+    <el-table :data="dataList.data" @selection-change="changeSelection" @sort-change="handleSortChange" v-loading="loading" stripe>
+        <el-table-column type="selection" width="50" align="center">
+        </el-table-column>
+        <el-table-column prop="source_id" label="ID" width="80" align="center">
+            <template slot-scope="scope">
+                <span class="id-cell">{{ scope.row.source_id }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="title" label="资源名称" min-width="280">
+            <template slot-scope="scope">
+                <span class="title-cell" :title="scope.row.title">{{ scope.row.title }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="source_category_id_name" label="分类" width="100" align="center">
+            <template slot-scope="scope">
+                <span class="category-tag">{{ scope.row.source_category_id_name || '未分类' }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="url" label="资源地址" min-width="200">
+            <template slot-scope="scope">
+                <el-link type="primary" :href="scope.row.url" target="_blank" :underline="false" class="url-link">
+                    <i class="el-icon-link"></i> {{ scope.row.url | truncate(40) }}
+                </el-link>
+            </template>
+        </el-table-column>
+        <el-table-column prop="page_views" label="浏览量" align="center" width="110" sortable="custom">
+            <template slot-scope="scope">
+                <span class="page-views-cell">
+                    <i class="el-icon-view"></i> {{ scope.row.page_views || 0 }}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="update_time" label="更新时间" align="center" width="160">
+        </el-table-column>
+        <el-table-column label="操作" width="140" align="center" fixed="right">
+            <template slot-scope="scope">
+                <div class="action-btns">
+                    <el-button type="text" size="small" @click="clickEdit(scope.row)" class="action-link">
+                        <i class="el-icon-edit"></i> 编辑
+                    </el-button>
+                    <el-button type="text" size="small" @click="clickDelete(scope.row)" class="action-link" style="color: var(--danger-color);">
+                        <i class="el-icon-delete"></i> 删除
+                    </el-button>
+                </div>
+            </template>
+        </el-table-column>
+    </el-table>
+
+
+    <div class="page">
+        <el-pagination @size-change="handleSizeChange" :page-sizes="[10, 20, 50, 100,200,500]" :page-size="10"
+            layout="total, sizes, prev, pager, next, jumper" background @current-change="changeCurrentPage"
+            :current-page="dataList.current_page" :page-count="dataList.last_page" :total="dataList.total">
+        </el-pagination>
+    </div>
+
+
+    <!-- 添加框 -->
+    <el-dialog title="添加资源" :visible.sync="dialogFormAdd" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="680px">
+        <el-form :model="formAdd" :rules="rules" ref="formAdd">
+            <el-form-item prop="source_category_id" label="资源分类" :label-width="formLabelWidth">
+                <el-select size="medium" v-model="formAdd.source_category_id" placeholder="请选择分类">
+                    <el-option v-for="item in category" :key="item.source_category_id" :label="item.name"
+                        :value="item.source_category_id">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item prop="title" label="资源名称" :label-width="formLabelWidth">
+                <el-input size="medium" autocomplete="off" placeholder="请输入资源名称" v-model="formAdd.title"></el-input>
+            </el-form-item>
+            <el-form-item prop="url" label="资源地址" :label-width="formLabelWidth">
+                <el-input size="medium" autocomplete="off" placeholder="请输入资源地址" v-model="formAdd.url"></el-input>
+            </el-form-item>
+            <el-form-item prop="account_name" label="账号名称" :label-width="formLabelWidth">
+                <el-input size="medium" autocomplete="off" placeholder="请输入账号名称" v-model="formAdd.account_name"></el-input>
+            </el-form-item>
+            <el-form-item label="关键词搜索" :label-width="formLabelWidth">
+                <el-input type="textarea" :rows="5" size="medium" autocomplete="off" placeholder="一行一个名称"
+                    v-model="formAdd.description"></el-input>
+            </el-form-item>
+            <el-form-item label="资源介绍" :label-width="formLabelWidth">
+                <el-input type="textarea" :rows="5" size="medium" autocomplete="off" placeholder=""
+                    v-model="formAdd.vod_content"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="postAdd()">确认添加</el-button>
+        </div>
+    </el-dialog>
+    <!-- 修改框 -->
+    <el-dialog title="修改资源" :visible.sync="dialogFormEdit" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="680px">
+        <el-form :model="formEdit" :rules="rules" ref="formEdit">
+            <el-form-item prop="source_category_id" label="资源分类" :label-width="formLabelWidth">
+                <el-select size="medium" v-model="formEdit.source_category_id" placeholder="请选择分类" clearable>
+                    <el-option v-for="item in category" :key="item.source_category_id" :label="item.name"
+                        :value="item.source_category_id">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item prop="title" label="资源名称" :label-width="formLabelWidth">
+                <el-input size="medium" autocomplete="off" placeholder="请输入资源名称" v-model="formEdit.title"></el-input>
+            </el-form-item>
+            <el-form-item prop="url" label="资源地址" :label-width="formLabelWidth">
+                <el-input size="medium" autocomplete="off" placeholder="请输入资源地址" v-model="formEdit.url"></el-input>
+            </el-form-item>
+            <el-form-item prop="account_name" label="账号名称" :label-width="formLabelWidth">
+                <el-input size="medium" autocomplete="off" placeholder="请输入账号名称" v-model="formEdit.account_name"></el-input>
+            </el-form-item>
+            <el-form-item label="关键词搜索" :label-width="formLabelWidth">
+                <el-input type="textarea" :rows="5" size="medium" autocomplete="off" placeholder="一行一个名称"
+                    v-model="formEdit.description"></el-input>
+            </el-form-item>
+            <el-form-item label="资源介绍" :label-width="formLabelWidth">
+                <el-input type="textarea" :rows="5" size="medium" autocomplete="off" placeholder=""
+                    v-model="formEdit.vod_content"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="postEdit()">确认修改</el-button>
+        </div>
+    </el-dialog>
+
+    <!-- 夸克导入数据 -->
+    <el-dialog title="导入资源" :visible.sync="dialogImport" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="600px">
+        <el-form :model="Importform">
+            <el-form-item prop="source_category_id" label="资源分类" label-width="90px">
+                <el-select size="medium" v-model="Importform.source_category_id" placeholder="请选择分类" clearable>
+                    <el-option v-for="item in category" :key="item.source_category_id" :label="item.name"
+                        :value="item.source_category_id">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="" label-width="90px">
+                <el-upload class="upload-demo" :data="Importform" name="file" ref="ImportUpload" drag
+                    :auto-upload="false" limit="1" :on-exceed="handleExceed" :on-success="handleAvatarSuccess"
+                    action="/admin/source/imports"
+                    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                </el-upload>
+                <span style="color: #999;">请使用xlsx格式，第一列资源名称、第二列资源地址、第三列资源分类名称（可自动创建）</span>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="ImportPost()">提交</el-button>
+        </div>
+    </el-dialog>
+
+    <!-- 批量导入数据 -->
+    <el-dialog title="导入资源" :visible.sync="dialogBatch" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="790px">
+        <el-form :model="Batchform">
+            <el-form-item prop="type" label="选择方式" label-width="70px">
+                <el-radio-group v-model="Batchform.type">
+                    <el-radio-button :label="1">直接导入</el-radio-button>
+                    <el-radio-button :label="2">转存分享导入</el-radio-button>
+                </el-radio-group>
+                <p style="color: #999;" v-if='Batchform.type==1'>直接导入：链接校验有效后直接入库；Tips：该功能不会检测是否重复；</p>
+                <p style="color: #999;" v-else-if='Batchform.type==2'>将资源转存到自己网盘后分享入库；Tips：该功能不会检测是否重复；</p>
+                <span style="color: #999;" v-if='Batchform.type==1'>支持<font color=orangered>夸克、阿里、UC、百度、迅雷、123、115、天翼、移动、磁力</font>
+                    的网盘资源(一次最多可以上传500条资源)</span>
+                <span style="color: #999;" v-else-if='Batchform.type==2'>支持<font color=orangered>夸克、阿里、UC、百度、迅雷、123、115、天翼、移动</font>
+                    的网盘资源(一次最多可以上传500条资源)</span>
+            </el-form-item>
+            <el-form-item prop="source_category_id" label="资源分类" label-width="70px" v-if="Batchform.type">
+                <el-select size="medium" v-model="Batchform.source_category_id" placeholder="请选择分类" clearable>
+                    <el-option v-for="item in category" :key="item.source_category_id" :label="item.name"
+                        :value="item.source_category_id">
+                    </el-option>
+                </el-select>
+
+            </el-form-item>
+
+            <el-form-item prop="urls" label="资源分类" label-width="70px" v-if="Batchform.type">
+                <el-input type="textarea" placeholder="资源示例：
+一条资源一行
+https://pan.quark.cn/s/xxxxxxxx
+https://www.alipan.com/s/xxxxxxxxx
+https://drive.uc.cn/s/xxxxxxxxxxx
+https://pan.baidu.com/s/xxxxxx?pwd=xxxx
+https://pan.xunlei.com/s/xxxxxx?pwd=xxxx" v-model="Batchform.urls" rows="20" show-word-limit>
+                </el-input>
+            </el-form-item>
+
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="BatchPost()">提交</el-button>
+        </div>
+    </el-dialog>
+
+    <!-- 批量修改分类 -->
+    <el-dialog title="批量修改分类" :visible.sync="dialogBatchCategory" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="400px">
+        <el-form :model="batchCategoryForm">
+            <el-form-item prop="source_category_id" label="资源分类" label-width="90px">
+                <el-select size="medium" v-model="batchCategoryForm.source_category_id" placeholder="请选择分类" required>
+                    <el-option v-for="item in category" :key="item.source_category_id" :label="item.name"
+                        :value="item.source_category_id">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="batchUpdateCategory()">确认修改</el-button>
+        </div>
+    </el-dialog>
+
+    {include file="common/footer"/}
+    <script>
+        // 文本截断过滤器
+        Vue.filter('truncate', function(value, length) {
+            if (!value) return '';
+            if (value.length <= length) return value;
+            return value.substring(0, length) + '...';
+        });
+        
+        var app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    search: {
+                        keyword: "",
+                        filter: "title",
+                        source_category_id: '',
+                        is_type: '',
+                        account_name: '',
+                        is_time: 0
+                    },
+                    formLabelWidth: '120px',
+                    dialogFormAdd: false,
+                    dialogFormEdit: false,
+                    loading: true,
+                    selectList: [],
+                    dataList: [],
+                    form: {
+                        page: 1,
+                        per_page: 10,
+                        order: 'create_time desc',
+                        sort_field: '',
+                        sort_order: ''
+                    },
+                    formAdd: {
+                    },
+                    formEdit: {
+                    },
+                    rules: {
+                        title: [{ required: true, message: '请输入资源名称', trigger: 'blur' }],
+                        url: [{ required: true, message: '请输入资源地址', trigger: 'blur' }],
+                    },
+                    dialogImport: false,
+                    Importform: {
+
+                    },
+
+                    category: [],
+                    accountList: [],
+
+                    dialogBatch: false,
+                    Batchform: {},
+                    dialogBatchCategory: false,
+                    batchCategoryForm: {},
+                }
+            },
+            created() {
+                this.getcategory();
+                this.getAdminList();
+            },
+            methods: {
+                getList_search(val) {
+                    if (val == 0) {
+                        this.search = {
+                            keyword: "",
+                            filter: "title",
+                            source_category_id: '',
+                            is_type: '',
+                            account_name: '',
+                            is_time: 0
+                        }
+                        // 重置排序
+                        this.form.sort_field = '';
+                        this.form.sort_order = '';
+                        this.form.order = 'create_time desc';
+                    }
+                    this.form.page = 1;
+                    this.getList();
+                },
+                handleSizeChange(per_page) {
+                    this.form.per_page = per_page;
+                    this.getList();
+                },
+                // 处理表格排序
+                handleSortChange({ column, prop, order }) {
+                    if (prop === 'page_views') {
+                        this.form.sort_field = 'page_views';
+                        if (order === 'ascending') {
+                            this.form.sort_order = 'asc';
+                            this.form.order = 'page_views asc';
+                        } else if (order === 'descending') {
+                            this.form.sort_order = 'desc';
+                            this.form.order = 'page_views desc';
+                        } else {
+                            // 取消排序，恢复默认
+                            this.form.sort_field = '';
+                            this.form.sort_order = '';
+                            this.form.order = 'create_time desc';
+                        }
+                        this.form.page = 1;
+                        this.getList();
+                    }
+                },
+                postEdit() {
+                    var that = this;
+                    that.$refs["formEdit"].validate((valid) => {
+                        if (valid) {
+                            axios.post('/admin/source/update', Object.assign({}, PostBase, that.formEdit))
+                                .then(function (response) {
+                                    that.getList();
+                                    if (response.data.code == CODE_SUCCESS) {
+                                        that.$message({
+                                            message: response.data.message,
+                                            type: 'success'
+                                        });
+                                        that.dialogFormEdit = false;
+                                    } else {
+                                        that.$message.error(response.data.message);
+                                    }
+                                })
+                                .catch(function (error) {
+                                    that.$message.error('服务器内部错误');
+                                    console.log(error);
+                                });
+                        }
+                    });
+                },
+                postAdd() {
+                    var that = this;
+                    that.$refs['formAdd'].validate((valid) => {
+                        if (valid) {
+                            if (!that.formAdd.title) {
+                                that.$message.error('请输入资源名称');
+                                return;
+                            }
+                            
+                            axios.post('/admin/source/add', Object.assign({}, PostBase, that.formAdd))
+                                .then(function (response) {
+                                    that.getList();
+                                    if (response.data.code == CODE_SUCCESS) {
+                                        that.$message({
+                                            message: response.data.message,
+                                            type: 'success'
+                                        });
+                                        that.dialogFormAdd = false;
+                                    } else {
+                                        that.$message.error(response.data.message);
+                                    }
+                                })
+                                .catch(function (error) {
+                                    that.$message.error('服务器内部错误');
+                                });
+                        }
+                    });
+                },
+                clickAdd() {
+                    var that = this;
+                    that.formAdd = { status: 1, share_image: '', account_name: adminName };
+                    that.dialogFormAdd = true;
+                },
+                clickDelete(row) {
+                    var that = this;
+                    this.$confirm('删除后，资源将无法查看，是否继续删除?', '删除提醒', {
+                        confirmButtonText: '删除',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        axios.post('/admin/source/delete', Object.assign({}, PostBase, {
+                            source_id: row.source_id
+                        }))
+                            .then(function (response) {
+                                that.getList();
+                                if (response.data.code == CODE_SUCCESS) {
+                                    that.$message({
+                                        message: response.data.message,
+                                        type: 'success'
+                                    });
+                                } else {
+                                    that.$message.error(response.data.message);
+                                }
+                            })
+                            .catch(function (error) {
+                                that.$message.error('服务器内部错误');
+                            });
+                    }).catch(() => {
+                    });
+                },
+                clickEdit(row) {
+                    var that = this;
+                    that.formEdit = row;
+                    axios.post('/admin/source/detail', Object.assign({}, PostBase, {
+                        source_id: row.source_id
+                    }))
+                        .then(function (response) {
+                            if (response.data.code == CODE_SUCCESS) {
+                                response.data.data.source_category_id = response.data.data.source_category_id || undefined
+                                that.formEdit = response.data.data;
+                                that.dialogFormEdit = true;
+                            } else {
+                                that.$message.error(response.data.message);
+                            }
+                        })
+                        .catch(function (error) {
+                            that.$message.error('服务器内部错误');
+                        });
+                },
+                changeCurrentPage(page) {
+                    this.form.page = page;
+                    this.getList();
+                },
+                getcategory() {
+                    var that = this;
+                    axios.post('/admin/source_category/getList', Object.assign({}, PostBase))
+                        .then(function (response) {
+                            that.loading = false;
+                            if (response.data.code == CODE_SUCCESS) {
+                                that.category = response.data.data;
+                                that.getList();
+                            } else {
+                                that.$message.error(response.data.message);
+                            }
+                        })
+                        .catch(function (error) {
+                            that.loading = false;
+                            that.$message.error('服务器内部错误');
+                            console.log(error);
+                        });
+                },
+                getList() {
+                    var that = this;
+                    that.loading = true;
+                    axios.post('/admin/source/getList', Object.assign({}, PostBase, that.form, that.search))
+                        .then(function (response) {
+                            that.loading = false;
+                            if (response.data.code == CODE_SUCCESS) {
+                                that.dataList = response.data.data;
+                                that.setcategory();
+                            } else {
+                                that.$message.error(response.data.message);
+                            }
+                        })
+                        .catch(function (error) {
+                            that.loading = false;
+                            that.$message.error('服务器内部错误');
+                        });
+                },
+                setcategory() {
+                    for (let item of this.dataList.data) {
+                        for (let items of this.category) {
+                            if (item.source_category_id == items.source_category_id) {
+                                item.source_category_id_name = items.name
+                            }
+                        }
+                    }
+                },
+                getAdminList() {
+                    var that = this;
+                    axios.post('/admin/admin/getList', Object.assign({}, PostBase, {
+                        page: 1,
+                        per_page: 1000
+                    }))
+                    .then(function (response) {
+                        if (response.data.code == CODE_SUCCESS) {
+                            var admins = new Set();
+                            for (let item of response.data.data.data) {
+                                if (item.admin_account) {
+                                    admins.add(item.admin_account);
+                                }
+                            }
+                            that.accountList = Array.from(admins).sort();
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+                },
+
+                //导入数据
+                ImportShow() {
+                    this.Importform = {
+                    }
+                    this.dialogImport = true
+                },
+                handleExceed(files, fileList) {
+                    this.$message.warning(`只能选择一个文件`);
+                },
+                handleAvatarSuccess(res, file) {
+                    if (res.code == 200) {
+                        this.getList();
+                        this.$message({
+                            message: res.message,
+                            type: 'success'
+                        });
+                        this.dialogImport = false;
+                    } else {
+                        this.$message.error(res.message);
+                    }
+                    this.$refs.ImportUpload.clearFiles();
+                },
+                ImportPost() {
+                    this.Importform = Object.assign(this.Importform, PostBase)
+                    this.$nextTick(() => {
+                        this.$refs.ImportUpload.submit();
+                    })
+                },
+
+                //批量导入数据
+                ImportBatch() {
+                    this.Batchform = {}
+                    this.dialogBatch = true
+                },
+                BatchPost() {
+                    var that = this;
+                    if (!that.Batchform.type) return that.$message.error('请选择导入方式');
+                    if (!that.Batchform.urls) return that.$message.error('请输入资源地址');
+                    axios.post('/admin/source/transfer', Object.assign({}, PostBase, that.Batchform))
+                        .then(function (res) {
+                        })
+                        .catch(function (error) {
+                            that.$message.error('服务器内部错误');
+                        });
+                    that.$message({
+                        message: "已提交任务，稍后查看结果",
+                        type: 'success'
+                    });
+                },
+
+
+                //数据导出
+                getExport() {
+                    var that = this;
+                    var filters = Object.assign({}, PostBase, that.search);
+                    var url = '/admin/source/excel?';
+                    for (let key in filters) {
+                        url += key + "=" + filters[key] + "&";
+                    }
+                    window.open(url);
+                    that.$message.success('数据导出成功');
+                },
+
+
+                postMultDelete() {
+                    var that = this;
+                    if (that.selectList.length == 0) {
+                        that.$message.error('未选择任何资源！');
+                        return;
+                    }
+                    this.$confirm('即将删除选中的资源, 是否确认?', '批量删除', {
+                        confirmButtonText: '删除',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        axios.post('/admin/source/delete', Object.assign({}, PostBase, {
+                            source_id: that.selectList.join(",")
+                        }))
+                            .then(function (response) {
+                                that.getList();
+                                if (response.data.code == CODE_SUCCESS) {
+                                    that.$message({
+                                        message: response.data.message,
+                                        type: 'success'
+                                    });
+                                } else {
+                                    that.$message.error(response.data.message);
+                                }
+                            })
+                            .catch(function (error) {
+                                that.$message.error('服务器内部错误');
+                                console.log(error);
+                            });
+                    }).catch(() => {
+                    });
+                },
+                changeSelection(list) {
+                    var that = this;
+                    that.selectList = [];
+                    for (var index in list) {
+                        that.selectList.push(list[index].source_id);
+                    }
+                },
+                
+                // 显示批量修改分类对话框
+                showBatchCategory() {
+                    var that = this;
+                    if (that.selectList.length == 0) {
+                        that.$message.error('未选择任何资源！');
+                        return;
+                    }
+                    that.batchCategoryForm = {};
+                    that.dialogBatchCategory = true;
+                },
+                
+                // 批量修改分类
+                batchUpdateCategory() {
+                    var that = this;
+                    if (!that.batchCategoryForm.source_category_id) {
+                        that.$message.error('请选择分类！');
+                        return;
+                    }
+                    
+                    axios.post('/admin/source/batchUpdateCategory', Object.assign({}, PostBase, {
+                        source_ids: that.selectList.join(","),
+                        source_category_id: that.batchCategoryForm.source_category_id
+                    }))
+                    .then(function (response) {
+                        that.getList();
+                        if (response.data.code == CODE_SUCCESS) {
+                            that.$message({
+                                message: response.data.message,
+                                type: 'success'
+                            });
+                            that.dialogBatchCategory = false;
+                        } else {
+                            that.$message.error(response.data.message);
+                        }
+                    })
+                    .catch(function (error) {
+                        that.$message.error('服务器内部错误');
+                        console.log(error);
+                    });
+                },
+            }
+        })
+    </script>
+
+
+</html>

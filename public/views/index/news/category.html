@@ -1,0 +1,198 @@
+{include file="news/common/header"}
+<meta name="referrer" content="never">
+</head>
+
+<body>
+    <div class="headBg" style="background-image: url({$config.home_bg});"></div>
+    <div id="app" v-cloak>
+        {include file="news/common/head"}
+        {notempty name="config.ad_list_top"}
+        <div class="ad-box">{$config.ad_list_top|raw}</div>
+        {/notempty}
+        <div class="searchBox searchList">
+            <div class="search">
+                <div class="select" @click="selectBtn">
+                    {if condition="$categoryId == 0"}全部资源{/if}
+                    {foreach $categoryList as $vo}
+                    {if condition='$categoryId == $vo.source_category_id'}{$vo.name}{/if}
+                    {/foreach}
+                    <i class="iconfont icon-xiala" style="font-size: 3vw"></i>
+                </div>
+                <input type="text" v-model="keyword" placeholder="可搜索一切资源" @keyup.enter="searchBtn"
+                    confirm-type="search" @confirm="searchBtn">
+                <div class="btn" @click="searchBtn">
+                    <i class="iconfont icon-sousuo"></i>
+                </div>
+            </div>
+        </div>
+        <div class="listBox">
+            <div class="screen">
+                <div class="fixed">
+                    <h3>资源分类</h3>
+                    <div class="box">
+                        <a href="/category" class="{eq name='categoryId' value='0'}active{/eq}">全部</a>
+                        {foreach $categoryList as $vo}
+                        <a href="/category?id={$vo.source_category_id}"
+                            class="{if condition='$categoryId == $vo.source_category_id'}active{/if}">{$vo.name}</a>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+            <div class="left">
+                <h3 v-if="total>0">【<span>{$currentCategoryName}</span>】共<span>&nbsp;{{total}}&nbsp;</span>条资源
+                </h3>
+                <h3 v-else>【<span>{$currentCategoryName}</span>】共<span>&nbsp;{$total}&nbsp;</span>条资源
+                </h3>
+                <div class="box">
+                    {if condition="$total > 0"}
+                    <div class="list">
+                        {foreach $list as $key=>$vo }
+                        <div class="item">
+                            <a href="javascript:;" onclick="linkBtn(this)" data-index="{$key}" class="title">
+                                {$vo.title}
+                            </a>
+                            <div class="type time">{$vo.times}</div>
+                            <div class="type">
+                                {if condition="isset($panTypeMap[$vo.is_type])"}
+                                <span>来源：{$panTypeMap[$vo.is_type]}</span>
+                                {else /}
+                                <span>来源：夸克网盘</span>
+                                {/if}
+                                {notempty name="vo.code"}
+                                <span>提取码：<span>{$vo.code}</span></span>
+                                {/notempty}
+                            </div>
+                            <div class="btns">
+                                <div class="btn"
+                                    @click.stop="copyText($event,'{$vo.title|trim}','{$vo.url}','{$vo.code}')"><i
+                                        class="iconfont icon-fenxiang1"></i>复制分享</div>
+                                <a href="/d/{$vo.id}.html" class="btn"><i class="iconfont icon-fangwen"></i>查看详情</a>
+                                {if condition="$vo.is_type == 9"}
+                                <!-- 磁力链接使用迅雷下载 -->
+                                <a href="javascript:;" onclick="thunderDownload('{$vo.url}')" class="btn" style="background: #0099ff; color: white;">
+                                    <i class="iconfont icon-xiazai"></i>迅雷下载
+                                </a>
+                                {else /}
+                                <a href="javascript:;" onclick="linkBtn(this)" data-index="{$key}" class="btn">
+                                    <img src="__STATIC__/news/common/static/images/{$vo.is_type}.png" class="icon"
+                                        alt="立即访问" />
+                                    立即访问
+                                </a>
+                                {/if}
+                            </div>
+                        </div>
+                        {/foreach}
+                    </div>
+                    <div class="page">
+                        <el-pagination background layout="prev, pager, next" :pager-count="3"
+                            :default-current-page="{$page}" :default-page-size="{$pageSize}"
+                            :total="{$total}" @change="changeBtn"></el-pagination>
+                    </div>
+                    {else /}
+                    <el-empty style="margin-top: 10%;" :image-size="200" image="{$config.search_bg??''}"
+                        description="{$config.search_tips|default='暂无资源数据'}">
+                    </el-empty>
+                    {/if}
+                </div>
+            </div>
+            <div class="right">
+                {volist name="hotList" id="vo"}
+                <div class="nav">
+                    {notempty name="vo.image"}
+                    <img src="{$vo.image}" alt="{$vo.name}">
+                    {/notempty}
+                    {$vo.name}
+                </div>
+                <div class="box">
+                    <div class="list">
+                        {volist name="vo.list" id="vos" length="5"}
+                        <a href="/s/{$vos.title}.html" class="item">
+                            <p>
+                                <span>{$key+1}</span>
+                                {$vos.title}
+                            </p>
+                        </a>
+                        {/volist}
+                    </div>
+                </div>
+                {/volist}
+            </div>
+        </div>
+        {notempty name="config.ad_list_bottom"}
+        <div class="ad-box">{$config.ad_list_bottom|raw}</div>
+        {/notempty}
+        {include file="news/common/foot"}
+    </div>
+    {include file="news/common/footer"}
+    <script type="text/javascript" charset="utf-8">
+        app.rankList = JSON.parse('<?php echo json_encode($rankList ?? [], JSON_UNESCAPED_UNICODE); ?>');
+        for (const item of app.rankList) {
+            axios.get('/api/tool/ranking', {
+                params: {
+                    channel: item.name
+                }
+            })
+        }
+
+        function changeBtn(page) {
+            var url = window.location.pathname;
+            var params = new URLSearchParams(window.location.search);
+            params.set('page', page);
+            window.location.href = url + '?' + params.toString();
+        }
+
+        function linkBtn(element) {
+            const index = element.getAttribute('data-index');
+            var jsonData = '<?php echo json_encode($listArray, JSON_UNESCAPED_UNICODE); ?>';
+            jsonData = jsonData.replace(/[\x00-\x1F\x7F]/g, '');
+            var list = JSON.parse(jsonData);
+            const item = list[index];
+            if (app.pc_type == 1) {
+                safeJump(item.url);
+            } else {
+                item.showUrl = item.url
+                app.dialogUrl = true;
+                showUrlFun(item);
+            }
+        }
+
+        function safeJump(url, target = '_blank') {
+            const a = document.createElement('a');
+            a.href = url;
+            a.rel = 'noreferrer';
+            a.target = target;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // 迅雷下载磁力链接
+        function thunderDownload(magnetUrl) {
+            if (!magnetUrl || !magnetUrl.startsWith('magnet:')) {
+                app.showMessage('无效的磁力链接', 'error');
+                return;
+            }
+            // 生成迅雷协议链接: thunder:// + base64('AA' + magnetUrl + 'ZZ')
+            const thunderUrl = 'thunder://' + btoa('AA' + magnetUrl + 'ZZ');
+            safeJump(thunderUrl);
+        }
+
+        function showUrlFun(item) {
+            // 如果是磁力链接，生成迅雷下载链接
+            if (item.showUrl && item.showUrl.startsWith('magnet:')) {
+                item.thunderUrl = 'thunder://' + btoa('AA' + item.showUrl + 'ZZ');
+            }
+            app.dialogItem = item
+            if (item.showUrl) {
+                var canvas = qrcanvas.qrcanvas({
+                    data: item.showUrl,
+                    size: 120
+                });
+                setTimeout(() => {
+                    document.getElementById('qrcode').appendChild(canvas);
+                }, 200);
+            }
+        }
+    </script>
+</body>
+</html>

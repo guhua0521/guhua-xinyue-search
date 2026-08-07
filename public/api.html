@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网盘转存测试工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        label span {
+            color: #666;
+            font-weight: normal;
+            font-size: 12px;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .result-content {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #28a745;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .quick-links {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+        }
+        
+        .quick-links h4 {
+            margin-bottom: 10px;
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        .quick-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin-right: 15px;
+            font-size: 13px;
+        }
+        
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2d2d2d;
+            border-radius: 8px;
+            color: #00ff00;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+        
+        .log-entry.success {
+            color: #51cf66;
+        }
+        
+        .log-entry.info {
+            color: #74c0fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 网盘转存测试工具</h1>
+        
+        <div class="info">
+            <strong>使用说明：</strong>
+            <br>• 输入加密后的网盘链接（从 test.html 获取）
+            <br>• 输入资源标题（可选）
+            <br>• 点击"开始转存"按钮调用 /api/other/save_url 接口
+            <br>• 查看转存结果和详细日志
+        </div>
+        
+        <div class="quick-links">
+            <h4>快速链接：</h4>
+            <a href="/test.html" target="_blank">打开加密解密工具</a>
+            <a href="#" onclick="clearLog()">清空日志</a>
+        </div>
+        
+        <div class="panel">
+            <div class="form-group">
+                <label for="encryptedUrl">
+                    加密后的网盘链接 <span>* 必填，从 test.html 加密后复制</span>
+                </label>
+                <textarea id="encryptedUrl" placeholder="粘贴加密后的 URL，例如：%2F2K1%2BxDWukEoK5zT6HE84zzZqn9Jj1XAGkPsmhO%2FP%2FQbPHFqMwT9%2FDSYZgrXyJmb"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="title">
+                    资源标题 <span>可选，留空则自动获取</span>
+                </label>
+                <input type="text" id="title" placeholder="例如：某资源名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="stoken">
+                    stoken <span>可选，某些网盘需要</span>
+                </label>
+                <input type="text" id="stoken" placeholder="例如：xxxxx">
+            </div>
+            
+            <button id="transferBtn" onclick="transfer()">
+                <span id="transferBtnText">开始转存</span>
+            </button>
+            
+            <div id="result" class="result" style="display: none;">
+                <h3>转存结果：</h3>
+                <div class="result-content" id="output"></div>
+                <button class="copy-btn" onclick="copyToClipboard('output')">复制结果</button>
+            </div>
+        </div>
+        
+        <div class="log" id="logContainer">
+            <div class="log-entry info">日志已就绪，等待操作...</div>
+        </div>
+    </div>
+    
+    <script>
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLog() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '<div class="log-entry info">日志已清空，等待操作...</div>';
+        }
+        
+        async function transfer() {
+            const encryptedUrl = document.getElementById('encryptedUrl').value.trim();
+            const title = document.getElementById('title').value.trim();
+            const stoken = document.getElementById('stoken').value.trim();
+            const btn = document.getElementById('transferBtn');
+            const btnText = document.getElementById('transferBtnText');
+            const resultDiv = document.getElementById('result');
+            const output = document.getElementById('output');
+            
+            if (!encryptedUrl) {
+                alert('请输入加密后的网盘链接');
+                return;
+            }
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span>转存中...';
+            resultDiv.style.display = 'none';
+            
+            addLog('1、用户请求 /api/other/save_url 接口', 'info');
+            
+            try {
+                addLog('2、接收参数，显示接口转入值', 'info');
+                addLog(`url= ${encryptedUrl}`, 'info');
+                addLog(`title= ${title || '(空)'}`, 'info');
+                addLog(`stoken= ${stoken || '(空)'}`, 'info');
+                
+                addLog('3、URL 解码，调用decryptObject() 解密 [AES-256-CBC]，显示解密后的值', 'info');
+                
+                const decryptResponse = await fetch('/api/test/decrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'data=' + encodeURIComponent(decodeURIComponent(encryptedUrl))
+                });
+                
+                const decryptResult = await decryptResponse.json();
+                
+                if (decryptResult.code === 200) {
+                    const decryptedUrl = decryptResult.data;
+                    addLog(`url= ${decryptedUrl}`, 'info');
+                    
+                    addLog('4、识别网盘类型', 'info');
+                    
+                    let panType = '';
+                    let panClass = '';
+                    
+                    if (decryptedUrl.includes('pan.baidu.com')) {
+                        panType = '百度网盘';
+                        panClass = '\\netdisk\\pan\\BaiduPan';
+                        addLog('网盘类型= 百度网盘', 'info');
+                    } else if (decryptedUrl.includes('pan.quark.cn')) {
+                        panType = '夸克网盘';
+                        panClass = '\\netdisk\\pan\\QuarkPan';
+                        addLog('网盘类型= 夸克网盘', 'info');
+                    } else if (decryptedUrl.includes('aliyundrive.com')) {
+                        panType = '阿里云盘';
+                        panClass = '\\netdisk\\pan\\AliPan';
+                        addLog('网盘类型= 阿里云盘', 'info');
+                    } else if (decryptedUrl.includes('magnet:')) {
+                        panType = '磁力链接';
+                        panClass = '(无需转存)';
+                        addLog('网盘类型= 磁力链接', 'info');
+                    } else {
+                        panType = '其他网盘';
+                        panClass = '\\netdisk\\pan\\OtherPan';
+                        addLog('网盘类型= 其他网盘', 'info');
+                    }
+                    
+                    addLog('5、调用对应网盘类', 'info');
+                    addLog(`网盘类= ${panClass}`, 'info');
+                    
+                    addLog('6、网盘类执行过程', 'info');
+                    addLog(`转存链接= ${decryptedUrl}`, 'info');
+                    
+                    const formData = new URLSearchParams();
+                    formData.append('url', encryptedUrl);
+                    if (title) {
+                        formData.append('title', title);
+                    }
+                    if (stoken) {
+                        formData.append('stoken', stoken);
+                    }
+                    
+                    const response = await fetch('/api/other/save_url', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData.toString()
+                    });
+                    
+                    addLog(`响应状态码: ${response.status}`, 'info');
+                    
+                    const result = await response.json();
+                    
+                    if (result.code === 200) {
+                        addLog('转存返回值= 成功', 'info');
+                        addLog('创建分享返回值= 成功', 'info');
+                        addLog(`响应数据: ${JSON.stringify(result)}`, 'info');
+                        addLog('转存成功！', 'success');
+                        output.textContent = JSON.stringify(result.data, null, 2);
+                        resultDiv.style.display = 'block';
+                        resultDiv.className = 'result success';
+                    } else {
+                        addLog('转存返回值= 失败', 'error');
+                        addLog(`错误信息: ${result.message}`, 'error');
+                        addLog(`响应数据: ${JSON.stringify(result)}`, 'info');
+                        addLog(`转存失败: ${result.message}`, 'error');
+                        output.textContent = JSON.stringify(result, null, 2);
+                        resultDiv.style.display = 'block';
+                        resultDiv.className = 'result error';
+                    }
+                } else {
+                    addLog(`解密失败: ${decryptResult.message}`, 'error');
+                    output.textContent = '解密失败：' + decryptResult.message;
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                addLog(`请求异常: ${error.message}`, 'error');
+                output.textContent = '请求失败：' + error.message;
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '开始转存';
+            }
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            addLog('复制结果到剪贴板...', 'info');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                addLog('✓ 复制成功！', 'success');
+                alert('复制成功！');
+            }).catch(err => {
+                addLog('使用备用复制方法...', 'info');
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                addLog('✓ 复制成功！', 'success');
+                alert('复制成功！');
+            });
+        }
+        
+        addLog('页面加载完成，准备就绪', 'success');
+    </script>
+</body>
+</html>

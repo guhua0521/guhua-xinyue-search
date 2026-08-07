@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('app-theme') || 'red';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.documentElement.setAttribute('data-page-loading', '');
+        })();
+    </script>
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+        el-dialog,
+        el-input,
+        el-button {
+            display: none !important;
+        }
+        [data-page-loading] #app {
+            visibility: hidden !important;
+        }
+        [data-page-loading] body,
+        [data-page-loading] html {
+            background-color: #f5f5f5 !important;
+        }
+        [data-theme="red"] body,
+        [data-theme="red"] html,
+        [data-theme="orange"] body,
+        [data-theme="orange"] html,
+        [data-theme="green"] body,
+        [data-theme="green"] html,
+        [data-theme="purple"] body,
+        [data-theme="purple"] html {
+            background-color: #f5f5f5 !important;
+        }
+        [data-theme="blue"] body,
+        [data-theme="blue"] html {
+            background-color: #f0f5ff !important;
+        }
+        [data-theme="dark"] body,
+        [data-theme="dark"] html {
+            background-color: #0f0f1a !important;
+        }
+    </style>
+    {notempty name="config.app_icon"}
+    <link rel="icon" href="{$config.app_icon}" />
+    {/notempty}
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1.0">
+    <title>{$seo_title}</title>
+    <meta name="keywords" content="{$seo_keywords}" />
+    <meta name="description" content="{$seo_description}" />
+    <meta name="referrer" content="no-referrer">
+    <link rel="stylesheet" href="__STATIC__/news/common/static/css/index.min.css">
+    <link rel="stylesheet" href="__STATIC__/news/common/static/css/app.css">
+    <link rel="stylesheet" href="__STATIC__/news/common/static/css/m.css">
+    
+    {$config.seo_statistics|raw}
+    
+    <style>
+        /* 主题配色方案 - 默认红 */
+        :root,
+        [data-theme="red"] {
+            --theme-primary: #ff6b6b;
+            --theme-primary-light: #ff8e53;
+            --theme-primary-gradient: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            --theme-primary-hover: #ff5252;
+            --theme-secondary-gradient: linear-gradient(135deg, #ff8e53 0%, #ffa940 100%);
+            --theme-tertiary-gradient: linear-gradient(135deg, #ffa940 0%, #ffc53d 100%);
+            --theme-background: #f5f5f5;
+            --theme-surface: #ffffff;
+            --theme-card: #fff8f0;
+            --theme-card-gradient: linear-gradient(135deg, #fff8f0 0%, #fff0f0 100%);
+            --theme-text: #333333;
+            --theme-text-secondary: #666666;
+            --theme-border: #f0f0f0;
+        }
+
+        /* 海洋蓝主题 */
+        [data-theme="blue"] {
+            --theme-primary: #4a90e2;
+            --theme-primary-light: #5fa3f0;
+            --theme-primary-gradient: linear-gradient(135deg, #4a90e2 0%, #5fa3f0 100%);
+            --theme-primary-hover: #3a7bc8;
+            --theme-secondary-gradient: linear-gradient(135deg, #5fa3f0 0%, #7eb8f7 100%);
+            --theme-tertiary-gradient: linear-gradient(135deg, #7eb8f7 0%, #9dcdff 100%);
+            --theme-background: #f0f4f8;
+            --theme-surface: #ffffff;
+            --theme-card: #f0f8ff;
+            --theme-card-gradient: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 100%);
+            --theme-text: #2c3e50;
+            --theme-text-secondary: #5a6c7d;
+            --theme-border: #e1e8ed;
+        }
+
+        /* 森林绿主题 */
+        [data-theme="green"] {
+            --theme-primary: #27ae60;
+            --theme-primary-light: #2ecc71;
+            --theme-primary-gradient: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            --theme-primary-hover: #229954;
+            --theme-secondary-gradient: linear-gradient(135deg, #2ecc71 0%, #58d68d 100%);
+            --theme-tertiary-gradient: linear-gradient(135deg, #58d68d 0%, #82e0aa 100%);
+            --theme-background: #f0f7f4;
+            --theme-surface: #ffffff;
+            --theme-card: #f0faf4;
+            --theme-card-gradient: linear-gradient(135deg, #f0faf4 0%, #e6f5eb 100%);
+            --theme-text: #1e3a2f;
+            --theme-text-secondary: #4a6356;
+            --theme-border: #d4e6dc;
+        }
+
+        /* 暗夜黑主题 */
+        [data-theme="dark"] {
+            --theme-primary: #6366f1;
+            --theme-primary-light: #8b5cf6;
+            --theme-primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --theme-primary-hover: #4f46e5;
+            --theme-secondary-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            --theme-tertiary-gradient: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+            --theme-background: #0f0f1a;
+            --theme-surface: #1a1a2e;
+            --theme-card: #252538;
+            --theme-card-gradient: linear-gradient(135deg, #252538 0%, #1e1e32 100%);
+            --theme-text: #f0f0f5;
+            --theme-text-secondary: #a0a0b0;
+            --theme-border: #3a3a4a;
+            --theme-text-muted: #808090;
+        }
+        
+        body {
+            background-color: var(--theme-background) !important;
+            color: var(--theme-text);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        {$config.home_css}
+    </style>
+</head>

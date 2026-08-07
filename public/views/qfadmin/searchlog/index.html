@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{$node.node_title}</title>
+    {include file="common/header"/}
+
+    <el-form :inline="true" @submit.native.prevent>
+        <el-form-item>
+            <el-button icon="el-icon-delete" size="small" @click="postClear">清空搜索记录</el-button>
+        </el-form-item>
+        <div style="float:right">
+            <el-form-item>
+                <el-input placeholder="输入关键词搜索" size="small" v-model="search.keyword" clearable
+                    @keyup.enter.native="getList_search"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" icon="el-icon-search" size="small" @click="getList_search">搜索</el-button>
+            </el-form-item>
+        </div>
+    </el-form>
+
+    <el-table :data="dataList.data" @selection-change="changeSelection" v-loading="loading">
+        <el-table-column type="selection" width="50">
+        </el-table-column>
+        <el-table-column prop="id" label="ID" width="80">
+        </el-table-column>
+        <el-table-column prop="pan_type" label="网盘类型" width="120" align="center">
+        </el-table-column>
+        <el-table-column prop="content" label="搜索内容" min-width="260" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="create_time_text" label="搜索时间" width="180" align="center">
+        </el-table-column>
+        <el-table-column label="操作" width="90" align="center">
+            <template slot-scope="scope">
+                <el-link type="danger" @click="clickDelete(scope.row)" :underline="false">删除</el-link>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <div class="page">
+        <el-pagination @size-change="handleSizeChange" :page-sizes="[10, 15, 30, 50]" :page-size="15"
+            layout="total, sizes, prev, pager, next, jumper" background @current-change="changeCurrentPage"
+            :current-page="dataList.current_page" :page-count="dataList.last_page" :total="dataList.total">
+        </el-pagination>
+    </div>
+
+    {include file="common/footer"/}
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    dataList: { data: [], total: 0, last_page: 1, current_page: 1 },
+                    loading: false,
+                    search: {},
+                    selection: [],
+                }
+            },
+            created() {
+                this.getList();
+            },
+            methods: {
+                getList() {
+                    var that = this;
+                    this.loading = true;
+                    axios.post('/admin/searchlog/getList', Object.assign({}, PostBase, this.search))
+                        .then(function (res) {
+                            that.loading = false;
+                            if (res.data.code == 200) {
+                                that.dataList = res.data.data;
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        })
+                        .catch(function () {
+                            that.loading = false;
+                            that.$message.error('服务器内部错误');
+                        });
+                },
+                getList_search() {
+                    this.getList();
+                },
+                handleSizeChange(val) {
+                    this.search.page_size = val;
+                    this.getList();
+                },
+                changeCurrentPage(val) {
+                    this.search.page_no = val;
+                    this.getList();
+                },
+                changeSelection(val) {
+                    this.selection = val;
+                },
+                clickDelete(row) {
+                    var that = this;
+                    this.$confirm('确定删除该条搜索记录吗？', '提示', { type: 'warning' })
+                        .then(function () {
+                            axios.post('/admin/searchlog/delete', Object.assign({}, PostBase, { id: row.id }))
+                                .then(function (res) {
+                                    if (res.data.code == 200) {
+                                        that.$message({ message: res.data.message, type: 'success' });
+                                        that.getList();
+                                    } else {
+                                        that.$message.error(res.data.message);
+                                    }
+                                });
+                        }).catch(function () {});
+                },
+                postClear() {
+                    var that = this;
+                    this.$confirm('确定清空全部搜索记录吗？此操作不可恢复！', '警告', { type: 'warning' })
+                        .then(function () {
+                            axios.post('/admin/searchlog/clear', Object.assign({}, PostBase))
+                                .then(function (res) {
+                                    if (res.data.code == 200) {
+                                        that.$message({ message: res.data.message, type: 'success' });
+                                        that.getList();
+                                    } else {
+                                        that.$message.error(res.data.message);
+                                    }
+                                });
+                        }).catch(function () {});
+                },
+            }
+        });
+    </script>
+</html>

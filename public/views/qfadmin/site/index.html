@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{$node.node_title}</title>
+    {include file="common/header"/}
+
+    <el-form :inline="true" @submit.native.prevent>
+        <el-form-item>
+            <el-button icon="el-icon-plus" size="small" type="primary" @click="clickAdd">一键开通分站</el-button>
+            <el-button icon="el-icon-delete" size="small" @click="postMultDelete">批量删除</el-button>
+        </el-form-item>
+        <div style="float:right">
+            <el-form-item>
+                <el-input placeholder="分站名称" size="small" v-model="search.site_name" clearable
+                    @keyup.enter.native="getList_search"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-input placeholder="绑定域名" size="small" v-model="search.site_domain" clearable
+                    @keyup.enter.native="getList_search"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-select size="small" v-model="search.site_status" placeholder="状态" clearable>
+                    <el-option label="正常" :value="0"></el-option>
+                    <el-option label="禁用" :value="1"></el-option>
+                    <el-option label="已到期" :value="2"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" icon="el-icon-search" size="small" @click="getList_search">搜索</el-button>
+            </el-form-item>
+        </div>
+    </el-form>
+
+    <el-table :data="dataList.data" @selection-change="changeSelection" v-loading="loading">
+        <el-table-column type="selection" width="50">
+        </el-table-column>
+        <el-table-column prop="site_id" label="ID" width="70">
+        </el-table-column>
+        <el-table-column prop="site_name" label="分站名称" min-width="140">
+        </el-table-column>
+        <el-table-column prop="site_domain" label="绑定域名" min-width="160">
+        </el-table-column>
+        <el-table-column prop="site_key" label="分站标识" width="120">
+        </el-table-column>
+        <el-table-column prop="admin_account" label="管理员账号" width="130">
+        </el-table-column>
+        <el-table-column label="状态" width="90" align="center">
+            <template slot-scope="scope">
+                <el-tag :type="scope.row.site_status == 0 ? 'success' : (scope.row.site_status == 2 ? 'warning' : 'danger')"
+                    size="small">
+                    {{ scope.row.site_status == 0 ? '正常' : (scope.row.site_status == 2 ? '已到期' : '禁用') }}
+                </el-tag>
+            </template>
+        </el-table-column>
+        <el-table-column prop="site_expire_text" label="到期时间" width="110">
+        </el-table-column>
+        <el-table-column prop="create_time_text" label="创建时间" width="150">
+        </el-table-column>
+        <el-table-column label="操作" width="260" align="center">
+            <template slot-scope="scope">
+                <div class="order-text">
+                    <p>
+                        <el-link type="primary" @click="clickEdit(scope.row)" :underline="false">编辑</el-link>
+                        <el-link type="success" @click="copyText(scope.row.admin_url)" :underline="false">复制后台地址</el-link>
+                        <el-link type="info" @click="copyText(scope.row.site_url)" :underline="false">复制前台地址</el-link>
+                    </p>
+                    <p>
+                        <el-link v-if="scope.row.site_status == 0" type="warning" @click="postDisable(scope.row)" :underline="false">禁用</el-link>
+                        <el-link v-else type="success" @click="postEnable(scope.row)" :underline="false">启用</el-link>
+                        <el-link type="danger" @click="clickDelete(scope.row)" :underline="false">删除</el-link>
+                    </p>
+                </div>
+            </template>
+        </el-table-column>
+    </el-table>
+
+    <div class="page">
+        <el-pagination @size-change="handleSizeChange" :page-sizes="[10, 20, 50, 100]" :page-size="10"
+            layout="total, sizes, prev, pager, next, jumper" background @current-change="changeCurrentPage"
+            :current-page="dataList.current_page" :page-count="dataList.last_page" :total="dataList.total">
+        </el-pagination>
+    </div>
+
+    <!-- 一键开通分站 -->
+    <el-dialog title="一键开通分站" :visible.sync="dialogFormAdd" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="640px">
+        <el-form :model="formAdd" :rules="rules" ref="formAdd" label-width="120px">
+            <el-form-item prop="site_name" label="分站名称">
+                <el-input v-model="formAdd.site_name" placeholder="例如：XX资源站"></el-input>
+            </el-form-item>
+            <el-form-item prop="site_domain" label="绑定域名">
+                <el-input v-model="formAdd.site_domain" placeholder="例如：ziyuan.example.com"></el-input>
+                <span class="f_tips">解析到本服务器后自动生效；本地测试可填 localhost 或 IP:端口</span>
+            </el-form-item>
+            <el-form-item label="分站标识">
+                <el-input v-model="formAdd.site_key" placeholder="留空自动生成，用于 ?site= 方式访问"></el-input>
+            </el-form-item>
+            <el-form-item label="到期时间">
+                <el-date-picker v-model="formAdd.site_expire" type="datetime" value-format="timestamp"
+                    placeholder="留空为永久" style="width:100%"></el-date-picker>
+            </el-form-item>
+            <el-form-item label="管理员账号">
+                <el-input v-model="formAdd.admin_account" placeholder="留空自动生成（site_标识）"></el-input>
+            </el-form-item>
+            <el-form-item label="管理员密码">
+                <el-input v-model="formAdd.admin_password" placeholder="留空自动生成，开通后请妥善保存"></el-input>
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input type="textarea" :rows="2" v-model="formAdd.site_remark" placeholder="可填写客户信息等"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" :loading="addLoading" @click="postAdd()">立即开通</el-button>
+        </div>
+    </el-dialog>
+
+    <!-- 开通成功：展示账号信息 -->
+    <el-dialog title="分站开通成功" :visible.sync="dialogResult" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="560px">
+        <el-alert type="success" :closable="false" title="请立即复制并保存以下信息，账号密码仅在本次显示"
+            style="margin-bottom: 14px;"></el-alert>
+        <el-descriptions :column="1" border size="medium">
+            <el-descriptions-item label="分站名称">{{ result.site_name }}</el-descriptions-item>
+            <el-descriptions-item label="前台地址">
+                <el-link type="primary" @click="copyText(result.site_url)">{{ result.site_url }}</el-link>
+            </el-descriptions-item>
+            <el-descriptions-item label="后台地址">
+                <el-link type="primary" @click="copyText(result.admin_url)">{{ result.admin_url }}</el-link>
+            </el-descriptions-item>
+            <el-descriptions-item label="管理员账号">{{ result.admin_account }}</el-descriptions-item>
+            <el-descriptions-item label="管理员密码">{{ result.admin_password }}</el-descriptions-item>
+            <el-descriptions-item label="分站标识">{{ result.site_key }}</el-descriptions-item>
+        </el-descriptions>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="copyAll">复制全部信息</el-button>
+            <el-button @click="dialogResult = false">关闭</el-button>
+        </div>
+    </el-dialog>
+
+    <!-- 编辑分站 -->
+    <el-dialog title="编辑分站" :visible.sync="dialogFormEdit" :modal-append-to-body='false' append-to-body
+        :close-on-click-modal='false' width="640px">
+        <el-form :model="formEdit" :rules="rules" ref="formEdit" label-width="120px">
+            <el-form-item prop="site_name" label="分站名称">
+                <el-input v-model="formEdit.site_name"></el-input>
+            </el-form-item>
+            <el-form-item prop="site_domain" label="绑定域名">
+                <el-input v-model="formEdit.site_domain"></el-input>
+            </el-form-item>
+            <el-form-item label="分站标识">
+                <el-input v-model="formEdit.site_key"></el-input>
+            </el-form-item>
+            <el-form-item label="到期时间">
+                <el-date-picker v-model="formEdit.site_expire" type="datetime" value-format="timestamp"
+                    placeholder="留空为永久" style="width:100%"></el-date-picker>
+            </el-form-item>
+            <el-form-item label="状态">
+                <el-select v-model="formEdit.site_status" style="width:100%">
+                    <el-option label="正常" :value="0"></el-option>
+                    <el-option label="禁用" :value="1"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="重置密码">
+                <el-input v-model="formEdit.new_password" placeholder="留空则不修改密码"></el-input>
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input type="textarea" :rows="2" v-model="formEdit.site_remark"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="postEdit()">保存修改</el-button>
+        </div>
+    </el-dialog>
+
+    {include file="common/footer"/}
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    dataList: { data: [] },
+                    loading: false,
+                    addLoading: false,
+                    search: {},
+                    selection: [],
+                    dialogFormAdd: false,
+                    dialogFormEdit: false,
+                    dialogResult: false,
+                    result: {},
+                    formAdd: {},
+                    formEdit: {},
+                    rules: {
+                        site_name: [{ required: true, message: '请输入分站名称', trigger: 'blur' }],
+                        site_domain: [{ required: true, message: '请输入绑定域名', trigger: 'blur' }],
+                    },
+                }
+            },
+            created() {
+                this.getList();
+            },
+            methods: {
+                getList() {
+                    var that = this;
+                    this.loading = true;
+                    axios.post('/admin/site/getList', Object.assign({}, PostBase, this.search))
+                        .then(function (res) {
+                            that.loading = false;
+                            if (res.data.code == 200) {
+                                that.dataList = res.data.data;
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        })
+                        .catch(function () {
+                            that.loading = false;
+                            that.$message.error('服务器内部错误');
+                        });
+                },
+                getList_search() {
+                    this.getList();
+                },
+                handleSizeChange(val) {
+                    this.search.per_page = val;
+                    this.getList();
+                },
+                changeCurrentPage(val) {
+                    this.search.page_no = val;
+                    this.getList();
+                },
+                changeSelection(val) {
+                    this.selection = val;
+                },
+                clickAdd() {
+                    this.formAdd = {};
+                    this.dialogFormAdd = true;
+                },
+                postAdd() {
+                    var that = this;
+                    this.$refs.formAdd.validate(function (valid) {
+                        if (!valid) return;
+                        var postData = Object.assign({}, that.formAdd);
+                        if (postData.site_expire) {
+                            postData.site_expire = Math.floor(postData.site_expire / 1000);
+                        } else {
+                            postData.site_expire = 0;
+                        }
+                        that.addLoading = true;
+                        axios.post('/admin/site/add', Object.assign({}, PostBase, postData))
+                            .then(function (res) {
+                                that.addLoading = false;
+                                if (res.data.code == 200) {
+                                    that.dialogFormAdd = false;
+                                    that.result = res.data.data;
+                                    that.result.site_url = 'http://' + that.result.site_domain;
+                                    that.result.admin_url = 'http://' + that.result.site_domain + '/qfadmin/admin/login';
+                                    that.dialogResult = true;
+                                    that.getList();
+                                } else {
+                                    that.$message.error(res.data.message);
+                                }
+                            })
+                            .catch(function () {
+                                that.addLoading = false;
+                                that.$message.error('服务器内部错误');
+                            });
+                    });
+                },
+                clickEdit(row) {
+                    var that = this;
+                    axios.post('/admin/site/detail', Object.assign({}, PostBase, { site_id: row.site_id }))
+                        .then(function (res) {
+                            if (res.data.code == 200) {
+                                that.formEdit = res.data.data;
+                                that.formEdit.site_expire = that.formEdit.site_expire
+                                    ? that.formEdit.site_expire * 1000 : '';
+                                that.formEdit.new_password = '';
+                                that.dialogFormEdit = true;
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        });
+                },
+                postEdit() {
+                    var that = this;
+                    var postData = Object.assign({}, this.formEdit);
+                    postData.site_id = this.formEdit.site_id;
+                    if (postData.site_expire) {
+                        postData.site_expire = Math.floor(postData.site_expire / 1000);
+                    } else {
+                        postData.site_expire = 0;
+                    }
+                    axios.post('/admin/site/update', Object.assign({}, PostBase, postData))
+                        .then(function (res) {
+                            if (res.data.code == 200) {
+                                that.$message({ message: res.data.message, type: 'success' });
+                                that.dialogFormEdit = false;
+                                that.getList();
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        });
+                },
+                postDisable(row) {
+                    var that = this;
+                    this.$confirm('确定禁用该分站吗？禁用后前台无法访问', '提示', { type: 'warning' })
+                        .then(function () {
+                            axios.post('/admin/site/disable', Object.assign({}, PostBase, { site_id: row.site_id }))
+                                .then(function (res) {
+                                    if (res.data.code == 200) {
+                                        that.$message({ message: res.data.message, type: 'success' });
+                                        that.getList();
+                                    } else {
+                                        that.$message.error(res.data.message);
+                                    }
+                                });
+                        }).catch(function () {});
+                },
+                postEnable(row) {
+                    var that = this;
+                    axios.post('/admin/site/enable', Object.assign({}, PostBase, { site_id: row.site_id }))
+                        .then(function (res) {
+                            if (res.data.code == 200) {
+                                that.$message({ message: res.data.message, type: 'success' });
+                                that.getList();
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        });
+                },
+                clickDelete(row) {
+                    var that = this;
+                    this.$confirm('确定删除该分站吗？分站配置与管理员账号将一并删除！', '警告', { type: 'warning' })
+                        .then(function () {
+                            axios.post('/admin/site/delete', Object.assign({}, PostBase, { site_id: row.site_id }))
+                                .then(function (res) {
+                                    if (res.data.code == 200) {
+                                        that.$message({ message: res.data.message, type: 'success' });
+                                        that.getList();
+                                    } else {
+                                        that.$message.error(res.data.message);
+                                    }
+                                });
+                        }).catch(function () {});
+                },
+                postMultDelete() {
+                    var that = this;
+                    if (!this.selection.length) {
+                        return this.$message.warning('请先勾选要删除的分站');
+                    }
+                    var ids = this.selection.map(function (item) { return item.site_id; }).join(',');
+                    this.$confirm('确定删除选中的分站吗？此操作不可恢复！', '警告', { type: 'warning' })
+                        .then(function () {
+                            axios.post('/admin/site/delete', Object.assign({}, PostBase, { site_id: ids }))
+                                .then(function (res) {
+                                    if (res.data.code == 200) {
+                                        that.$message({ message: res.data.message, type: 'success' });
+                                        that.getList();
+                                    } else {
+                                        that.$message.error(res.data.message);
+                                    }
+                                });
+                        }).catch(function () {});
+                },
+                copyText(text) {
+                    var that = this;
+                    var textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = 0;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        that.$message({ message: '已复制：' + text, type: 'success' });
+                    } catch (e) {
+                        that.$message.error('复制失败，请手动复制');
+                    }
+                    document.body.removeChild(textArea);
+                },
+                copyAll() {
+                    var that = this;
+                    var text = '分站名称：' + this.result.site_name +
+                        '\n前台地址：' + this.result.site_url +
+                        '\n后台地址：' + this.result.admin_url +
+                        '\n管理员账号：' + this.result.admin_account +
+                        '\n管理员密码：' + this.result.admin_password +
+                        '\n分站标识：' + this.result.site_key;
+                    var textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = 0;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        that.$message({ message: '已复制全部开通信息', type: 'success' });
+                    } catch (e) {
+                        that.$message.error('复制失败，请手动复制');
+                    }
+                    document.body.removeChild(textArea);
+                },
+            }
+        });
+    </script>
+
+</html>

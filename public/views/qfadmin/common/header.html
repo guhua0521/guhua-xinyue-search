@@ -1,0 +1,45 @@
+<meta charset="UTF-8">
+<!-- import CSS -->
+<link rel="stylesheet" href="/static/admin/css/element.css">
+<link rel="stylesheet" href="/static/admin/css/YAdmin.css">
+<script>window.ADMIN_COOKIE_NAME = '{$adminCookieName|default="access_token"}';</script>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <el-container>
+            <el-header
+                style="height:56px;display:flex;align-items:center;justify-content:space-between;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);padding:0 16px;">
+                <div style="display:flex;align-items:center;">
+                    <a href="/qfadmin" style="display:flex;align-items:center;text-decoration:none;">
+                        <img src="/static/admin/images/logo.png" width="34"
+                            style="vertical-align:middle;border-radius:6px;">
+                        <span
+                            style="font-size:16px;font-weight:700;color:#333;margin-left:10px;">{if $siteContextName}{$siteContextName}{else}网盘资源管理系统{/if}</span>
+                    </a>
+                </div>
+                <div style="width: 240px;float: right;">
+                    <span class="topArea">
+                        <el-link :underline="false" class="el-icon-full-screen menuicon" onclick="requestFullScreen()"></el-link>
+                        <!-- <el-link :underline="false" class="el-icon-brush menuicon"></el-link> -->
+                        <el-dropdown>
+                            <el-link :underline="false">&nbsp;{$adminInfo['admin_account']}<i class="el-icon-arrow-down"></i></el-link>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item onclick="location.href='/qfadmin/admin/updatemyinfo';">修改资料
+                                </el-dropdown-item>
+                                <el-dropdown-item onclick="location.href='/qfadmin/admin/motifypassword';">修改密码
+                                </el-dropdown-item>
+                                <el-dropdown-item onclick="location.href='/qfadmin/system/clean';">清除缓存
+                                </el-dropdown-item>
+                                {if $siteContextName}
+                                <el-dropdown-item onclick="location.href='/qfadmin?site=main';">主站后台</el-dropdown-item>
+                                {/if}
+                                <el-dropdown-item  onclick="logout()">退出登录</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </span>
+                </div>
+            </el-header>
+            <el-container class="body">
+                {include file="common/menu"/}
+                <el-main>

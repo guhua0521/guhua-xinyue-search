@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanCheck - 网盘链接检测工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-item {
+            transition: all 0.3s ease;
+        }
+        .result-item:hover {
+            transform: translateX(4px);
+        }
+        .pulse-dot {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-slate-800 mb-2">PanCheck</h1>
+            <p class="text-slate-600">网盘链接有效性检测工具</p>
+            <div class="mt-4 flex justify-center gap-2 flex-wrap">
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">百度网盘</span>
+                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">阿里云盘</span>
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">夸克网盘</span>
+                <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">115网盘</span>
+                <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">+5更多</span>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="glass rounded-2xl shadow-xl p-6 mb-6">
+            <!-- Input Section -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    输入网盘分享链接（每行一个）
+                </label>
+                <textarea 
+                    id="linksInput" 
+                    class="w-full h-40 p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-slate-700"
+                    placeholder="https://pan.baidu.com/s/1xxxxx
+https://pan.quark.cn/s/xxxxx
+https://www.aliyundrive.com/s/xxxxx"></textarea>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-xs text-slate-500">支持批量检测，一次最多 100 个链接</span>
+                    <span id="linkCount" class="text-xs text-slate-500">0 个链接</span>
+                </div>
+            </div>
+
+            <!-- API URL Setting -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    API 地址
+                </label>
+                <input 
+                    type="text" 
+                    id="apiUrl" 
+                    value="api.php"
+                    class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
+                    placeholder="http://your-domain.com/api.php">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button 
+                    id="checkBtn"
+                    onclick="checkLinks()"
+                    class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                    <svg id="btnIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span id="btnText">开始检测</span>
+                </button>
+                <button 
+                    onclick="clearAll()"
+                    class="px-6 py-3 border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                    清空
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" class="hidden mb-6">
+            <div class="glass rounded-xl p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-slate-700 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full pulse-dot"></span>
+                        检测进度
+                    </span>
+                    <span id="progressText" class="text-sm text-slate-500">0 / 0</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div id="statsSection" class="hidden mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-slate-800" id="statTotal">0</div>
+                    <div class="text-sm text-slate-500">总计</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-green-600" id="statValid">0</div>
+                    <div class="text-sm text-slate-500">有效</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-red-600" id="statInvalid">0</div>
+                    <div class="text-sm text-slate-500">失效</div>
+                </div>
+                <div class="glass rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-slate-600" id="statDuration">0ms</div>
+                    <div class="text-sm text-slate-500">耗时</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <div class="glass rounded-2xl shadow-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-slate-800">检测结果</h2>
+                    <button 
+                        onclick="copyResults()"
+                        class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        复制结果
+                    </button>
+                </div>
+                <div id="resultsList" class="space-y-2">
+                    <!-- Results will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="errorSection" class="hidden mt-6">
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">检测失败</h3>
+                        <p id="errorMessage" class="text-sm text-red-600 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let isChecking = false;
+        let checkResults = [];
+        let stats = { total: 0, valid: 0, invalid: 0, duration: 0 };
+        let startTime = 0;
+
+        // Update link count
+        document.getElementById('linksInput').addEventListener('input', function() {
+            const links = this.value.split('\n').filter(line => line.trim() !== '');
+            document.getElementById('linkCount').textContent = links.length + ' 个链接';
+        });
+
+        async function checkLinks() {
+            if (isChecking) return;
+
+            const input = document.getElementById('linksInput').value.trim();
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+
+            if (!input) {
+                showError('请输入至少一个网盘链接');
+                return;
+            }
+
+            const links = input.split('\n').filter(line => line.trim() !== '');
+            
+            if (links.length > 100) {
+                showError('一次最多检测 100 个链接');
+                return;
+            }
+
+            // Initialize state
+            isChecking = true;
+            checkResults = [];
+            stats = { total: links.length, valid: 0, invalid: 0, duration: 0 };
+            startTime = Date.now();
+
+            // Reset UI
+            hideError();
+            document.getElementById('resultsList').innerHTML = '';
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('statsSection').classList.remove('hidden');
+            updateStats();
+            
+            // Show progress
+            document.getElementById('progressSection').classList.remove('hidden');
+            updateProgress(0);
+            
+            // Update button state
+            const btn = document.getElementById('checkBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            btn.disabled = true;
+            btnText.textContent = '检测中...';
+            btnIcon.classList.add('loading');
+
+            // Check links one by one
+            for (let i = 0; i < links.length; i++) {
+                if (!isChecking) break; // Allow cancellation
+
+                const link = links[i].trim();
+                if (!link) continue;
+
+                try {
+                    const result = await checkSingleLink(apiUrl, link);
+                    checkResults.push(result);
+                    
+                    // Update statistics
+                    if (result.valid === true) {
+                        stats.valid++;
+                    } else if (result.valid === false) {
+                        stats.invalid++;
+                    }
+                    stats.duration = Date.now() - startTime;
+                    
+                    // Display result immediately
+                    displaySingleResult(result, i);
+                    updateStats();
+                    updateProgress(i + 1);
+
+                } catch (error) {
+                    // Handle error for this specific link
+                    const errorResult = {
+                        link: link,
+                        platform: detectPlatform(link),
+                        valid: null,
+                        error: error.message || '检测失败',
+                        duration: 0
+                    };
+                    checkResults.push(errorResult);
+                    displaySingleResult(errorResult, i);
+                    updateProgress(i + 1);
+                }
+            }
+
+            // Finish
+            isChecking = false;
+            btn.disabled = false;
+            btnText.textContent = '开始检测';
+            btnIcon.classList.remove('loading');
+            
+            // Hide progress after a delay
+            setTimeout(() => {
+                document.getElementById('progressSection').classList.add('hidden');
+            }, 1000);
+        }
+
+        async function checkSingleLink(apiUrl, link) {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ links: [link] })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || '检测失败');
+            }
+
+            // Return the first (and only) result
+            if (data.results && data.results.length > 0) {
+                return data.results[0];
+            }
+
+            throw new Error('无返回结果');
+        }
+
+        function displaySingleResult(result, index) {
+            const resultsList = document.getElementById('resultsList');
+            
+            const item = document.createElement('div');
+            item.className = 'result-item fade-in p-4 rounded-xl border ' + 
+                (result.valid === true ? 'bg-green-50 border-green-200' : 
+                 result.valid === false ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200');
+            
+            const platformName = getPlatformName(result.platform);
+            const statusIcon = result.valid === true 
+                ? '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+                : result.valid === false
+                ? '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>'
+                : '<svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+            
+            item.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 mt-0.5">${statusIcon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-medium px-2 py-0.5 rounded bg-white/80 text-slate-600">${platformName}</span>
+                            <span class="text-xs text-slate-400">${result.duration}ms</span>
+                        </div>
+                        <p class="text-sm text-slate-700 truncate" title="${result.link}">${result.link}</p>
+                        ${result.failureReason ? `<p class="text-xs text-red-600 mt-1">${result.failureReason}</p>` : ''}
+                        ${result.error ? `<p class="text-xs text-yellow-600 mt-1">错误: ${result.error}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Insert at the beginning (newest first) or append
+            resultsList.appendChild(item);
+            
+            // Scroll to the latest result
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function updateProgress(completed) {
+            const total = stats.total;
+            const percent = total > 0 ? (completed / total) * 100 : 0;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = `${completed} / ${total}`;
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = stats.total;
+            document.getElementById('statValid').textContent = stats.valid;
+            document.getElementById('statInvalid').textContent = stats.invalid;
+            document.getElementById('statDuration').textContent = stats.duration + 'ms';
+        }
+
+        function detectPlatform(link) {
+            const patterns = {
+                'baidu': /pan\.baidu\.com|yun\.baidu\.com/,
+                'aliyun': /alipan\.com|.aliyundrive\.com/,
+                'quark': /pan\.quark\.cn/,
+                'pan115': /115\.com|115cdn\.com/,
+                'pan123': /123pan\.com|123pan\.cn|123684\.com|123685\.com|123912\.com/,
+                'uc': /drive\.uc\.cn/,
+                'tianyi': /cloud\.189\.cn/,
+                'xunlei': /pan\.xunlei\.com/,
+                'cmcc': /yun\.139\.com/,
+            };
+
+            for (const [platform, pattern] of Object.entries(patterns)) {
+                if (pattern.test(link)) {
+                    return platform;
+                }
+            }
+            return 'unknown';
+        }
+
+        function getPlatformName(platform) {
+            const names = {
+                'baidu': '百度网盘',
+                'aliyun': '阿里云盘',
+                'quark': '夸克网盘',
+                'pan115': '115网盘',
+                'pan123': '123网盘',
+                'uc': 'UC网盘',
+                'tianyi': '天翼云盘',
+                'xunlei': '迅雷云盘',
+                'cmcc': '中国移动云盘',
+                'unknown': '未知平台'
+            };
+            return names[platform] || platform || '未知';
+        }
+
+        function clearAll() {
+            document.getElementById('linksInput').value = '';
+            document.getElementById('linkCount').textContent = '0 个链接';
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('statsSection').classList.add('hidden');
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('resultsList').innerHTML = '';
+            hideError();
+            
+            // Reset state
+            isChecking = false;
+            checkResults = [];
+            stats = { total: 0, valid: 0, invalid: 0, duration: 0 };
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorSection').classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorSection').classList.add('hidden');
+        }
+
+        function copyResults() {
+            if (checkResults.length === 0) {
+                alert('暂无检测结果');
+                return;
+            }
+
+            let text = 'PanCheck 检测结果\n';
+            text += '='.repeat(50) + '\n\n';
+            
+            checkResults.forEach(result => {
+                const platformName = getPlatformName(result.platform);
+                const status = result.valid === true ? '✅ 有效' : 
+                              result.valid === false ? '❌ 失效' : '⚠️ 未知';
+                
+                text += `[${platformName}] ${status}\n`;
+                text += `链接: ${result.link}\n`;
+                if (result.failureReason) text += `原因: ${result.failureReason}\n`;
+                if (result.error) text += `错误: ${result.error}\n`;
+                text += `耗时: ${result.duration}ms\n`;
+                text += '\n';
+            });
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('结果已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
+        }
+    </script>
+</body>
+</html>

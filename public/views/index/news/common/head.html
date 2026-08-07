@@ -1,0 +1,304 @@
+<div class="headerBox">
+    <div class="box">
+        <a href="/" class="logoBox" {notempty name="fixed" }:style="{ opacity: elementOpacity }" {/notempty}>
+            {notempty name="config.logo"}
+            <img class="logo" src="{$config.logo}" alt="{$config.app_name}"></img>
+            {/notempty}
+
+            <div class="logo-text">
+                <div class="title-row">
+                    {if condition="$config.app_name && $config.app_name_hide!=1"}
+                    <div class="title">{$config.app_name}</div>
+                    <span class="version">Ver2.0</span>
+                    {/if}
+                </div>
+                <div class="subtitle">{notempty name="config.app_description"}{$config.app_description}{else/}专业网盘资源搜索分享平台 | 聚合全网优质网盘链接{/notempty}</div>
+            </div>
+        </a>
+        
+        <!-- 中间导航 -->
+        <div class="center-navs" {notempty name="fixed" }:style="{ opacity: elementOpacity }" {/notempty}>
+            <a href="/" class="nav-item active">搜索</a>
+            <a href="/ranking" class="nav-item">热播榜</a>
+            <a href="/latest" class="nav-item">最近更新</a>
+            <div class="nav-item" @click="layerVisible = true">提交需求</div>
+            <div class="nav-item" @click="layerVisible = true">提交资源</div>
+        </div>
+        
+        <div class="navs">
+            <div class="filter-btn">
+                <i class="iconfont icon-shaixuan"></i>
+                筛选
+            </div>
+            <div class="theme-toggle" @click="toggleTheme">
+                <i class="iconfont icon-yueliang"></i>
+            </div>
+            <div class="iconfont icon-caidan" @click="drawer = true"></div>
+        </div>
+    </div>
+</div>
+<div class="headerKox" style="display: none;"></div>
+
+<style>
+    /* 导航栏新样式 */
+    .headerBox {
+        background: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        position: relative !important;
+    }
+    
+    .headerBox .bg {
+        display: none !important;
+    }
+    
+    .headerBox .box {
+        width: 1080px;
+        padding: 0 20px;
+    }
+    
+    .logoBox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .logoBox .logo {
+        height: 40px;
+        width: 40px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+    
+    .logoBox .logo-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .logoBox .logo-text .title-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .logoBox .title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-left: 0;
+    }
+    
+    .logoBox .version {
+        font-size: 11px;
+        color: #ff6b6b;
+        background: #fff0f0;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+    }
+    
+    .logoBox .subtitle {
+        font-size: 12px;
+        color: #999;
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* 中间导航 */
+    .center-navs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 auto;
+    }
+    
+    .center-navs .nav-item {
+        padding: 8px 20px;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .center-navs .nav-item:hover,
+    .center-navs .nav-item.active {
+        color: #ff6b6b;
+        background: #fff0f0;
+    }
+    
+    /* 右侧按钮 */
+    .navs {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+        border: 1px solid #e8e8e8;
+    }
+    
+    .filter-btn:hover {
+        border-color: #ff6b6b;
+        color: #ff6b6b;
+    }
+    
+    .theme-toggle {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #666;
+    }
+    
+    .theme-toggle:hover {
+        background: #f5f5f5;
+        color: #ff6b6b;
+    }
+    
+    /* 隐藏原来的搜索框 */
+    .headerBox .box .search {
+        display: none;
+    }
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        .center-navs {
+            display: none;
+        }
+        
+        .filter-btn {
+            display: none;
+        }
+    }
+</style>
+
+{notempty name="config.qcode"}
+<el-dialog v-if="qcodeVisible" v-model="qcodeVisible" width="300">
+    <img src="{$config.qcode}" style="width: 100%" />
+</el-dialog>
+{/notempty}
+
+<el-dialog v-if="layerVisible" v-model="layerVisible" width="300">
+    <div class="layerBox">
+        <div class="vname">提交需求</div>
+        <el-input v-model="content" placeholder="请输入你想看的资源信息~" type="textarea" resize='none'></el-input>
+        <div class="vbtn" @click="saveBtn">提交</div>
+    </div>
+</el-dialog>
+
+<el-dialog v-if="drawer" v-model="drawer" width="300" center>
+    <div class="drawer">
+        {notempty name="config.qcode"}
+        <div class="item" @click="qcodeVisible = true">加入群聊</div>
+        {/notempty}
+        {empty name="config.app_demand"}
+        <div class="item" @click="layerVisible = true">提交需求</div>
+        {/empty}
+        <div class="btns" v-html="`{$config.app_links}`"></div>
+    </div>
+</el-dialog>
+
+<el-dialog v-if="dialogUrl" title="" v-model="dialogUrl" class="dialogUrlBox" :close-on-click-modal="false" :style="{ backgroundColor: '#fff' }">
+    <div v-loading="dialogLoading" class="dialogUrl" v-if="dialogUrl" style="background: #fff; padding: 20px; border-radius: 12px;">
+        <div v-if="dialogItem.showUrl" style="background: #fff;">
+            <!-- 磁力链接特殊处理：显示二维码和迅雷下载 -->
+            <div v-if="dialogItem.showUrl.startsWith('magnet:')" style="background: #fff;">
+                <div class="title" style="background: #fff;">磁力资源下载</div>
+                <div class="tips" style="background: #fff;">请使用迅雷APP扫码或点击下方按钮下载</div>
+                <div class="qrcode" id="qrcode" style="background: #fff;"></div>
+                <div class="nav" style="text-align: center; padding: 10px 0; background: #fff;">
+                    <div class="item" style="background: #fff;">
+                        <span class="t">{{dialogItem.title}}</span>
+                    </div>
+                    <div class="item" style="margin-top: 15px; background: #fff;">
+                        <a :href="dialogItem.thunderUrl" class="btn" style="display: inline-block; padding: 12px 24px; background: #0099ff; color: white; border-radius: 4px; text-decoration: none; font-size: 16px;">
+                            <i class="iconfont icon-xiazai"></i> 使用迅雷下载
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- 非磁力链接正常显示 -->
+            <div v-else style="background: #fff;">
+                <!-- 手机端始终显示二维码和链接，PC端根据pc_type设置显示 -->
+                <template v-if="is_m == 1">
+                    <!-- 手机端：显示二维码+链接 -->
+                    <div class="title" style="background: #fff;">请使用 <span>{{panTypeMap[dialogItem.is_type] || '夸克APP'}}</span> 扫码获取</div>
+                    <div class="tips" style="background: #fff;">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP- 点击搜索框中的相机 - 点击扫码</div>
+                    <div class="qrcode" id="qrcode" style="background: #fff;"></div>
+                    <div class="nav" style="background: #fff;">
+                        <div class="item" style="background: #fff;">
+                            <span class="t">{{dialogItem.title}}</span>
+                        </div>
+                        <div class="item" style="background: #fff;">
+                            <span>资源地址：</span>
+                            <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer">{{dialogItem.showUrl}}</a>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <!-- PC端：根据pc_type设置显示 -->
+                    <!-- pc_type=1(仅跳转)：只显示链接 -->
+                    <template v-if="pc_type == 1">
+                        <div class="title" style="background: #fff;">资源详情</div>
+                        <div class="nav" style="background: #fff; padding: 20px 0;">
+                            <div class="item" style="background: #fff;">
+                                <span class="t">{{dialogItem.title}}</span>
+                            </div>
+                            <div class="item" style="background: #fff; margin-top: 15px;">
+                                <span>资源地址：</span>
+                                <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer">{{dialogItem.showUrl}}</a>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- pc_type=2(仅扫码)：只显示二维码 -->
+                    <template v-else-if="pc_type == 2">
+                        <div class="title" style="background: #fff;">请使用 <span>{{panTypeMap[dialogItem.is_type] || '夸克APP'}}</span> 扫码获取</div>
+                        <div class="tips" style="background: #fff;">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP- 点击搜索框中的相机 - 点击扫码</div>
+                        <div class="qrcode" id="qrcode" style="background: #fff;"></div>
+                        <div class="nav" style="background: #fff;">
+                            <div class="item" style="background: #fff;">
+                                <span class="t">{{dialogItem.title}}</span>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- pc_type=0或其他：默认显示二维码和链接 -->
+                    <template v-else>
+                        <div class="title" style="background: #fff;">请使用 <span>{{panTypeMap[dialogItem.is_type] || '夸克APP'}}</span> 扫码获取</div>
+                        <div class="tips" style="background: #fff;">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP- 点击搜索框中的相机 - 点击扫码</div>
+                        <div class="qrcode" id="qrcode" style="background: #fff;"></div>
+                        <div class="nav" style="background: #fff;">
+                            <div class="item" style="background: #fff;">
+                                <span class="t">{{dialogItem.title}}</span>
+                            </div>
+                            <div class="item" style="background: #fff;">
+                                <span>资源地址：</span>
+                                <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer">{{dialogItem.showUrl}}</a>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+        <div v-else-if="!dialogLoading" style="background: #fff;">
+            <div class="title" style="background: #fff;">获取失败</div>
+            <div class="tips" style="color: #FF3F3D; background: #fff;">{{dialogItem.message}}</div>
+        </div>
+    </div>
+</el-dialog>

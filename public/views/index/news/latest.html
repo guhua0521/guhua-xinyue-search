@@ -1,0 +1,1588 @@
+{include file="news/common/header"}
+<meta name="referrer" content="never">
+<style>
+    /* 隐藏原导航栏 */
+    .headerBox,
+    .headerKox {
+        display: none !important;
+    }
+    
+    /* 顶部导航栏样式 - 卡片式 */
+    #app > .top-nav {
+        background: transparent !important;
+        padding: 12px 16px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #app > .top-nav .top-nav-box {
+        width: 1048px !important;
+        max-width: calc(100% - 32px) !important;
+        margin: 0 auto !important;
+        padding: 6px 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: var(--theme-surface) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        position: relative !important;
+        transition: background-color 0.3s ease !important;
+    }
+
+    #app > .top-nav .top-nav-logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-decoration: none !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-img,
+    #app > .top-nav .top-nav-logo .logo-placeholder {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-placeholder {
+        background: var(--theme-primary-gradient) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-text {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-title-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-name {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: var(--theme-text) !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-version {
+        font-size: 10px !important;
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+        padding: 1px 6px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-subtitle {
+        font-size: 11px !important;
+        color: var(--theme-text-secondary) !important;
+        max-width: 20em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    #app > .top-nav .top-nav-menu {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    #app > .top-nav .nav-menu-item {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+
+    #app > .top-nav .nav-menu-item:hover,
+    #app > .top-nav .nav-menu-item.active {
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+    
+    /* 后台配置的外链样式 */
+    #app > .top-nav .top-nav-menu > a {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+    
+    #app > .top-nav .top-nav-menu > a:hover,
+    #app > .top-nav .top-nav-menu > a.active {
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+
+    #app > .top-nav .top-nav-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #app > .top-nav .nav-menu-icon {
+        font-size: 20px !important;
+        cursor: pointer !important;
+        color: var(--theme-text-secondary) !important;
+        display: none !important;
+    }
+
+    /* 主题切换器样式 */
+    #app > .top-nav .theme-switcher {
+        position: relative;
+    }
+
+    #app > .top-nav .theme-switcher-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--theme-surface);
+        color: var(--theme-text-secondary);
+        border: 1px solid var(--theme-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    #app > .top-nav .theme-switcher-btn:hover {
+        background: var(--theme-background);
+        color: var(--theme-primary);
+        border-color: var(--theme-primary);
+    }
+
+    #app > .top-nav .theme-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: var(--theme-surface);
+        border: 1px solid var(--theme-border);
+        border-radius: 10px;
+        padding: 8px;
+        min-width: 140px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    #app > .top-nav .theme-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--theme-text);
+    }
+
+    #app > .top-nav .theme-option:hover {
+        background: var(--theme-background);
+    }
+
+    #app > .top-nav .theme-option.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+
+    #app > .top-nav .theme-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    #app > .top-nav .theme-name {
+        font-size: 13px;
+    }
+
+    /* Page container */
+    .latest-page-container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 16px;
+    }
+
+    /* Filter section */
+    .filter-section {
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .filter-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--theme-text);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-section-title::before {
+        content: '';
+        width: 4px;
+        height: 18px;
+        background: var(--theme-primary-gradient);
+        border-radius: 2px;
+    }
+
+    .filter-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .filter-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        min-width: 60px;
+        padding-top: 4px;
+        flex-shrink: 0;
+    }
+
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .filter-option {
+        padding: 4px 12px;
+        border-radius: 14px;
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .filter-option:hover {
+        color: var(--theme-primary);
+        background: rgba(255, 107, 107, 0.1);
+    }
+
+    .filter-option.active {
+        color: #fff;
+        background: var(--theme-primary-gradient);
+        border-color: transparent;
+    }
+
+    /* Content section */
+    .latest-content {
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .latest-content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+
+    .latest-content-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--theme-text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .latest-content-title i {
+        color: var(--theme-primary);
+        font-size: 20px;
+    }
+
+    .latest-total {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* List styles */
+    .latest-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .latest-item {
+        display: flex;
+        align-items: center;
+        padding: 16px;
+        background: var(--theme-background);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .latest-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .latest-item-number {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--theme-primary-gradient);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-right: 16px;
+        flex-shrink: 0;
+    }
+
+    .latest-item-number.top {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+    }
+
+    .latest-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .latest-item-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--theme-text);
+        margin-bottom: 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .latest-item-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+    }
+
+    .latest-item-tag {
+        padding: 2px 8px;
+        background: rgba(255, 107, 107, 0.1);
+        color: var(--theme-primary);
+        border-radius: 4px;
+        font-size: 11px;
+    }
+
+    .latest-item-time {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .latest-item-action {
+        margin-left: 16px;
+        flex-shrink: 0;
+    }
+
+    .latest-item-btn {
+        padding: 6px 16px;
+        background: var(--theme-primary-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .latest-item-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    }
+
+    /* Loading state */
+    .latest-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 20px;
+    }
+
+    /* Empty state */
+    .latest-empty {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .latest-empty-icon {
+        font-size: 48px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 12px;
+    }
+
+    .latest-empty-text {
+        font-size: 14px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Pagination */
+    .latest-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--theme-border);
+    }
+
+    .latest-page-btn {
+        padding: 8px 20px;
+        border: 1px solid var(--theme-border);
+        background: var(--theme-surface);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        color: var(--theme-text);
+        transition: all 0.2s ease;
+    }
+
+    .latest-page-btn:hover:not(:disabled) {
+        border-color: var(--theme-primary);
+        color: var(--theme-primary);
+    }
+
+    .latest-page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .latest-page-info {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Top nav responsive */
+    @media (max-width: 1024px) {
+        #app > .top-nav .top-nav-box {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        /* 隐藏桌面端导航菜单，显示汉堡菜单 */
+        #app > .top-nav .top-nav-menu {
+            display: none !important;
+        }
+        #app > .top-nav .nav-menu-icon {
+            display: block !important;
+        }
+        #app > .top-nav .top-nav-logo .logo-subtitle {
+            display: none !important;
+        }
+        #app > .top-nav .theme-switcher-btn {
+            width: 28px;
+            height: 28px;
+        }
+        #app > .top-nav .theme-switcher-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+        #app > .top-nav .theme-dropdown {
+            right: -40px;
+            min-width: 120px;
+        }
+        #app > .top-nav .theme-name {
+            font-size: 12px;
+        }
+
+        /* 页面容器 */
+        .latest-page-container {
+            padding: 12px;
+        }
+
+        /* 筛选区域 */
+        .filter-section {
+            padding: 12px 16px;
+        }
+        .filter-section-title {
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--theme-border);
+        }
+        .filter-row {
+            gap: 8px;
+            overflow: hidden;
+        }
+        .filter-label {
+            font-size: 11px;
+            min-width: 32px;
+            padding-top: 5px;
+            flex-shrink: 0;
+        }
+        .filter-options {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 4px;
+        }
+        .filter-options::-webkit-scrollbar {
+            display: none;
+        }
+        .filter-option {
+            padding: 3px 8px;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        /* 内容区域 */
+        .latest-content {
+            padding: 12px;
+        }
+        .latest-content-header {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+        }
+        .latest-content-title {
+            font-size: 15px;
+        }
+        .latest-content-title i {
+            font-size: 16px;
+        }
+        .latest-total {
+            font-size: 11px;
+        }
+
+        /* 列表项 */
+        .latest-item {
+            padding: 10px 12px;
+        }
+        .latest-item-number {
+            width: 26px;
+            height: 26px;
+            font-size: 11px;
+            margin-right: 10px;
+        }
+        .latest-item-title {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .latest-item-meta {
+            gap: 8px;
+            font-size: 11px;
+        }
+        .latest-item-tag {
+            padding: 1px 6px;
+            font-size: 10px;
+        }
+        .latest-item-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        /* 分页 */
+        .latest-pagination {
+            margin-top: 16px;
+            padding-top: 16px;
+            gap: 8px;
+        }
+        .latest-page-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+        .latest-page-info {
+            font-size: 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .latest-item {
+            padding: 8px 10px;
+        }
+        .latest-item-number {
+            width: 24px;
+            height: 24px;
+            font-size: 10px;
+            margin-right: 8px;
+        }
+        .latest-item-title {
+            font-size: 12px;
+        }
+        .latest-item-meta {
+            font-size: 10px;
+        }
+        .latest-item-btn {
+            padding: 3px 8px;
+            font-size: 10px;
+        }
+    }
+
+    /* Footer styles */
+    .footerBox {
+        background: var(--theme-surface);
+        border-top: 1px solid var(--theme-border);
+        padding: 30px 20px;
+        margin-top: 40px;
+    }
+    
+    .footerBox .box {
+        max-width: 1080px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    
+    .footerBox .box p {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        line-height: 1.8;
+        margin: 4px 0;
+    }
+
+    /* 手机端导航抽屉 */
+    .nav-drawer .el-dialog__header {
+        display: none;
+    }
+    .nav-drawer .el-dialog__body {
+        padding: 0;
+    }
+    
+    /* 联系我们弹窗 - 防止初始加载时显示 */
+    .qrcode-dialog {
+        display: none;
+    }
+    .el-overlay .qrcode-dialog {
+        display: block;
+    }
+    .nav-drawer-content {
+        background: var(--theme-surface);
+    }
+    .nav-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+    .nav-drawer-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+    .nav-drawer-close {
+        font-size: 16px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    .nav-drawer-close:hover {
+        background: var(--theme-background);
+        color: var(--theme-text);
+    }
+    .nav-drawer-menu {
+        padding: 8px;
+    }
+    .nav-drawer-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .nav-drawer-item:last-child {
+        margin-bottom: 0;
+    }
+    .nav-drawer-item:hover {
+        background: var(--theme-background);
+    }
+    .nav-drawer-item.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+    
+    /* 后台配置的外链样式 - 手机端抽屉 */
+    .nav-drawer-menu > a {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+    .nav-drawer-menu > a:last-child {
+        margin-bottom: 0;
+    }
+    .nav-drawer-menu > a:hover,
+    .nav-drawer-menu > a.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+
+    /* 资源弹窗样式 */
+    .resource-dialog {
+        background: var(--theme-surface) !important;
+        border-radius: 8px;
+    }
+    /* 手机端弹窗宽度适配 */
+    @media (max-width: 768px) {
+        .el-overlay .el-dialog.resource-dialog,
+        .el-overlay-dialog .resource-dialog,
+        .resource-dialog {
+            width: 92vw !important;
+            max-width: 400px;
+            background: var(--theme-surface) !important;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+        }
+        .resource-dialog .el-dialog__header,
+        .resource-dialog .el-dialog__body {
+            background: var(--theme-surface) !important;
+        }
+        .resource-dialog-content {
+            padding: 16px;
+            background: var(--theme-surface) !important;
+        }
+    }
+    .resource-dialog .el-dialog__header {
+        margin: 0;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--theme-border);
+        background: var(--theme-surface);
+    }
+    .resource-dialog .el-dialog__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+    .resource-dialog .el-dialog__body {
+        padding: 0;
+    }
+    .resource-dialog-content {
+        padding: 20px;
+    }
+    .success-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--theme-primary);
+        margin-bottom: 12px;
+    }
+    .resource-subtitle {
+        text-align: center;
+        font-size: 14px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 16px;
+        word-break: break-all;
+    }
+    .scan-tip {
+        text-align: center;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--theme-text);
+        margin-bottom: 8px;
+    }
+    .scan-desc {
+        text-align: center;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 16px;
+    }
+    .qrcode-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    .qrcode {
+        width: 180px;
+        height: 180px;
+        padding: 10px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .url-box {
+        background: var(--theme-background);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 16px;
+    }
+    .url-label {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 4px;
+    }
+    .url-text {
+        font-size: 13px;
+        color: var(--theme-text);
+        word-break: break-all;
+    }
+    .tip-text {
+        text-align: center;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 16px;
+    }
+    .dialog-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .btn-primary {
+        padding: 8px 20px;
+        background: var(--theme-primary-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+    .btn-secondary {
+        padding: 8px 20px;
+        background: var(--theme-surface);
+        color: var(--theme-text);
+        border: 1px solid var(--theme-border);
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-secondary:hover {
+        background: var(--theme-background);
+    }
+    .error-content {
+        text-align: center;
+        padding: 20px;
+    }
+    .error-title {
+        font-size: 16px;
+        color: #f56c6c;
+        margin-bottom: 8px;
+    }
+    .error-message {
+        font-size: 14px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 16px;
+    }
+    .pan-name {
+        color: var(--theme-primary);
+        font-weight: 500;
+    }
+</style>
+</head>
+
+<body>
+    <div class="headBg" style="background-image: url({$config.home_bg});display:none;"></div>
+    <div id="app" v-cloak>
+
+        <!-- 顶部导航栏 -->
+        <div class="top-nav">
+            <div class="top-nav-box">
+                <a href="/" class="top-nav-logo">
+                    {notempty name="config.logo"}
+                    <img class="logo-img" src="{$config.logo}" alt="{$config.app_name}">
+                    {else/}
+                    <div class="logo-placeholder">MS</div>
+                    {/notempty}
+                    <div class="logo-text">
+                        <div class="logo-title-row">
+                            <span class="logo-name">{$config.app_name|default='妙搜云'}</span>
+                            <span class="logo-version">Ver2.1</span>
+                        </div>
+                        <span class="logo-subtitle">{$config.app_description|default='专业网盘资源搜索分享平台'}</span>
+                    </div>
+                </a>
+                
+                <div class="top-nav-menu">
+                    {notempty name="config.app_links"}
+                        {$config.app_links|raw}
+                    {else/}
+                        <a href="/" class="nav-menu-item">搜索</a>
+                        <a href="/ranking" class="nav-menu-item">热播榜</a>
+                        <a href="/latest" class="nav-menu-item active">最近更新</a>
+                        <div class="nav-menu-item" @click="qcodeVisible = true">联系我们</div>
+                    {/notempty}
+                </div>
+                
+                <div class="top-nav-actions">
+                    <!-- 主题切换 -->
+                    <div class="theme-switcher" ref="themeSwitcherRef">
+                        <div class="theme-switcher-btn" @click.stop="toggleThemeDropdown" title="切换主题">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </div>
+                        <div class="theme-dropdown" v-show="showThemeDropdown">
+                            <div class="theme-option" :class="{active: currentTheme === 'red'}" @click="switchTheme('red')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);"></span>
+                                <span class="theme-name">暖红</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'blue'}" @click="switchTheme('blue')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #4a90e2 0%, #5fa3f0 100%);"></span>
+                                <span class="theme-name">海洋蓝</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'green'}" @click="switchTheme('green')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"></span>
+                                <span class="theme-name">森林绿</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'dark'}" @click="switchTheme('dark')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);"></span>
+                                <span class="theme-name">暗夜黑</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-menu-icon iconfont icon-caidan" @click="drawer = true"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 群二维码弹窗 -->
+        <el-dialog v-if="qcodeVisible" v-model="qcodeVisible" width="300" title="联系我们" custom-class="qrcode-dialog" :style="{ backgroundColor: '#fff' }">
+            <template #header>
+                <div style="background: #fff; padding: 15px; font-weight: bold; border-bottom: 1px solid #eee;">联系我们</div>
+            </template>
+            <div style="text-align: center; padding: 20px; background: #fff;">
+                {notempty name="config.qcode"}
+                <img src="{$config.qcode}" style="width: 100%; border-radius: 8px; display: block; background: #f5f5f5;"/>
+                {/notempty}
+                <p style="margin-top: 15px; color: #666; font-size: 14px;">{notempty name="config.contact_desc"}{$config.contact_desc}{else/}欢迎联系我们，获取更多资源{/notempty}</p>
+                <div style="margin-top: 12px; text-align: left; color: #333; font-size: 14px; line-height: 2.2;">
+                    {notempty name="config.contact_qq"}
+                    <div>QQ：<a href="tencent://message/?uin={$config.contact_qq}" target="_blank" style="color:#409eff;">{$config.contact_qq}</a></div>
+                    {/notempty}
+                    {notempty name="config.contact_wechat"}
+                    <div>微信：<span>{$config.contact_wechat}</span></div>
+                    {/notempty}
+                    {notempty name="config.contact_qqgroup"}
+                    <div>QQ群：<span>{$config.contact_qqgroup}</span></div>
+                    {/notempty}
+                    {notempty name="config.contact_phone"}
+                    <div>电话：<a href="tel:{$config.contact_phone}" style="color:#409eff;">{$config.contact_phone}</a></div>
+                    {/notempty}
+                </div>
+            </div>
+        </el-dialog>
+
+        <!-- 资源弹窗 -->
+        <el-dialog v-if="dialogUrl" title="转存结果" v-model="dialogUrl" class="resource-dialog" :close-on-click-modal="false" width="420px">
+            <div v-loading="dialogLoading" class="resource-dialog-content" v-if="dialogUrl">
+                <div v-if="dialogItem.showUrl">
+                    <!-- 磁力链接特殊处理：显示二维码和迅雷下载 -->
+                    <div v-if="dialogItem.showUrl.startsWith('magnet:')" class="magnet-content">
+                        <div class="success-title">获取成功!</div>
+                        <div class="resource-subtitle">{{dialogItem.title}}</div>
+                        <div class="scan-tip">磁力资源下载</div>
+                        <div class="scan-desc">请使用迅雷APP扫码或点击下方按钮下载</div>
+                        <div class="qrcode-wrapper">
+                            <div class="qrcode" id="qrcode"></div>
+                        </div>
+                        <div class="url-box">
+                            <div class="url-label">资源地址：</div>
+                            <div class="url-text">{{dialogItem.showUrl}}</div>
+                        </div>
+                        <div class="tip-text">打开迅雷APP扫码或点击下方按钮下载</div>
+                        <div class="dialog-actions">
+                            <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                            <button @click="downloadWithThunder(dialogItem.showUrl, dialogItem.title)" class="btn-secondary">迅雷下载</button>
+                            <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                        </div>
+                    </div>
+                    <!-- 非磁力链接正常显示 -->
+                    <div v-else class="normal-content">
+                        <div class="success-title">获取成功!</div>
+                        <div class="resource-subtitle">{{dialogItem.title}}</div>
+                        <!-- 手机端始终显示二维码和链接 -->
+                        <template v-if="is_m == 1">
+                            <div class="scan-tip">
+                                请使用 <span class="pan-name">{{panTypeMap[dialogItem.is_type] || '夸克网盘'}}</span> 扫码获取
+                            </div>
+                            <div class="scan-desc">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP - 点击搜索框中的相机 - 点击扫码</div>
+                            <div class="qrcode-wrapper">
+                                <div class="qrcode" id="qrcode"></div>
+                            </div>
+                            <div class="url-box">
+                                <div class="url-label">资源地址：</div>
+                                <div class="url-text">{{dialogItem.showUrl}}</div>
+                            </div>
+                            <div class="dialog-actions">
+                                <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                                <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary">打开链接</a>
+                                <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                            </div>
+                        </template>
+                        <!-- PC端根据pc_type设置显示 -->
+                        <template v-else>
+                            <!-- pc_type=1(仅跳转)：只显示链接 -->
+                            <template v-if="pc_type == 1">
+                                <div class="url-box" style="margin-top: 20px;">
+                                    <div class="url-label">资源地址：</div>
+                                    <div class="url-text">{{dialogItem.showUrl}}</div>
+                                </div>
+                                <div class="dialog-actions">
+                                    <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                                    <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary">打开链接</a>
+                                    <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                                </div>
+                            </template>
+                            <!-- pc_type=2(仅扫码)：只显示二维码 -->
+                            <template v-else-if="pc_type == 2">
+                                <div class="scan-tip" style="margin-top: 10px;">
+                                    请使用 <span class="pan-name">{{panTypeMap[dialogItem.is_type] || '夸克网盘'}}</span> 扫码获取
+                                </div>
+                                <div class="scan-desc">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP - 点击搜索框中的相机 - 点击扫码</div>
+                                <div class="qrcode-wrapper">
+                                    <div class="qrcode" id="qrcode"></div>
+                                </div>
+                                <div class="dialog-actions">
+                                    <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                                </div>
+                            </template>
+                            <!-- pc_type=0或其他：默认显示二维码和链接 -->
+                            <template v-else>
+                                <div class="scan-tip">
+                                    请使用 <span class="pan-name">{{panTypeMap[dialogItem.is_type] || '夸克网盘'}}</span> 扫码获取
+                                </div>
+                                <div class="scan-desc">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP - 点击搜索框中的相机 - 点击扫码</div>
+                                <div class="qrcode-wrapper">
+                                    <div class="qrcode" id="qrcode"></div>
+                                </div>
+                                <div class="url-box">
+                                    <div class="url-label">资源地址：</div>
+                                    <div class="url-text">{{dialogItem.showUrl}}</div>
+                                </div>
+                                <div class="dialog-actions">
+                                    <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                                    <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary">打开链接</a>
+                                    <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+                <div v-else-if="!dialogLoading" class="error-content">
+                    <div class="error-title">获取失败</div>
+                    <div class="error-message">{{dialogItem.message}}</div>
+                    <div class="dialog-actions">
+                        <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </el-dialog>
+
+        <!-- 手机端导航菜单 -->
+        <el-dialog v-if="drawer" v-model="drawer" width="200" center custom-class="nav-drawer" :show-close="false">
+            <div class="nav-drawer-content">
+                <div class="nav-drawer-header">
+                    <span class="nav-drawer-title">{$config.app_name|default='妙搜云'}</span>
+                    <span class="nav-drawer-close iconfont icon-guanbi" @click="drawer = false"></span>
+                </div>
+                <div class="nav-drawer-menu">
+                    {notempty name="config.app_links"}
+                        {$config.app_links|raw}
+                    {else/}
+                        <a href="/" class="nav-drawer-item">搜索</a>
+                        <a href="/ranking" class="nav-drawer-item">热播榜</a>
+                        <a href="/latest" class="nav-drawer-item active">最近更新</a>
+                        <div class="nav-drawer-item" @click="qcodeVisible = true; drawer = false">联系我们</div>
+                    {/notempty}
+                </div>
+            </div>
+        </el-dialog>
+
+        <div class="latest-page-container">
+            <!-- Filter section -->
+            <div class="filter-section">
+                <div class="filter-section-title">筛选条件</div>
+                <!-- 网盘类型筛选 -->
+                <div class="filter-row">
+                    <span class="filter-label">网盘</span>
+                    <div class="filter-options">
+                        <span class="filter-option" :class="{active: currentPanType === ''}" @click="setPanType('')">全部</span>
+                        <span class="filter-option"
+                              v-for="item in panTypeList"
+                              :key="item.id"
+                              :class="{active: currentPanType === item.id}"
+                              @click="setPanType(item.id)">
+                            {{item.name}}
+                        </span>
+                    </div>
+                </div>
+                <!-- 资源分类筛选 -->
+                <div class="filter-row">
+                    <span class="filter-label">分类</span>
+                    <div class="filter-options">
+                        <span class="filter-option" :class="{active: currentCategory === ''}" @click="setCategory('')">全部</span>
+                        <span class="filter-option"
+                              v-for="item in categoryList"
+                              :key="item.id"
+                              :class="{active: currentCategory === item.id}"
+                              @click="setCategory(item.id)">
+                            {{item.name}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content section -->
+            {notempty name="config.ad_list_top"}
+            <div class="ad-box">{$config.ad_list_top|raw}</div>
+            {/notempty}
+            <div class="latest-content">
+                <div class="latest-content-header">
+                    <div class="latest-content-title">
+                        <i class="iconfont icon-shijian"></i>
+                        最近更新
+                    </div>
+                    <div class="latest-total">共 {{total}} 条资源</div>
+                </div>
+
+                <!-- Loading state -->
+                <div class="latest-loading" v-if="loading">
+                    <i class="iconfont icon-loading icon-spin" style="font-size: 32px; color: var(--theme-primary);"></i>
+                </div>
+
+                <!-- Empty state -->
+                <div class="latest-empty" v-else-if="list.length === 0">
+                    <div class="latest-empty-icon">
+                        <i class="iconfont icon-empty"></i>
+                    </div>
+                    <div class="latest-empty-text">暂无数据</div>
+                </div>
+
+                <!-- List -->
+                <div class="latest-list" v-else>
+                    <div class="latest-item" v-for="(item, index) in list" :key="item.id" @click="goToDetail(item)">
+                        <div class="latest-item-number" :class="{top: (currentPage - 1) * pageSize + index < 3}">
+                            {{(currentPage - 1) * pageSize + index + 1}}
+                        </div>
+                        <div class="latest-item-info">
+                            <div class="latest-item-title">{{item.title}}</div>
+                            <div class="latest-item-meta">
+                                <span class="latest-item-tag">{{item.pantype}}</span>
+                                <span class="latest-item-time">
+                                    <i class="iconfont icon-shijian"></i>
+                                    {{item.datetime}}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="latest-item-action">
+                            <button class="latest-item-btn">查看</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="latest-pagination" v-if="totalPages > 1">
+                    <button class="latest-page-btn" :disabled="currentPage === 1" @click="changePage(currentPage - 1)">上一页</button>
+                    <span class="latest-page-info">{{currentPage}} / {{totalPages}}</span>
+                    <button class="latest-page-btn" :disabled="currentPage === totalPages" @click="changePage(currentPage + 1)">下一页</button>
+                </div>
+            </div>
+        </div>
+
+        <template v-if="!loading && list.length > 0">
+        {notempty name="config.ad_list_bottom"}
+        <div class="ad-box">{$config.ad_list_bottom|raw}</div>
+        {/notempty}
+        {include file="news/common/foot"}
+        </template>
+    </div>
+
+    <script src="__STATIC__/news/common/static/js/vue.global.min.js"></script>
+    <script src="__STATIC__/news/common/static/js/index.full.min.js"></script>
+    <script src="__STATIC__/news/common/static/js/axios.min.js"></script>
+    <script src="__STATIC__/news/common/static/js/qrcanvas@3.js"></script>
+    <script type="text/javascript">
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+        // 网盘类型映射
+        const panTypeMap = {0: '夸克网盘', 1: '阿里云盘', 2: '百度网盘', 3: 'UC网盘', 4: '迅雷云盘', 5: '123云盘', 6: '115网盘', 7: '天翼云盘', 8: '移动云盘', 9: '磁力链接', 10: '光鸭网盘'};
+
+        const app = createApp({
+            setup() {
+                const drawer = ref(false);
+                const qcodeVisible = ref(false);
+                const loading = ref(true);
+                const list = ref([]);
+                const currentPage = ref(1);
+                const pageSize = ref(20);
+                const total = ref(0);
+                const currentPanType = ref('');
+                const currentCategory = ref('');
+
+                // 弹窗相关
+                const dialogUrl = ref(false);
+                const dialogLoading = ref(false);
+                const dialogItem = ref({});
+
+                // 设备类型和PC端显示方式
+                const is_m = ref(0);
+                const pc_type = ref(parseInt('{$config.pc_type}') || 0);
+
+                // 主题相关
+                const currentTheme = ref('red');
+                const showThemeDropdown = ref(false);
+                const themeSwitcherRef = ref(null);
+
+                const panTypeList = ref({:json_encode($panTypeList)});
+                const categoryList = ref({:json_encode($categoryList)});
+
+                const totalPages = computed(() => Math.ceil(total.value / pageSize.value));
+
+                // 加载数据
+                const loadData = async () => {
+                    loading.value = true;
+                    try {
+                        const response = await axios.get('/api/other/get_latest_sources_page', {
+                            params: {
+                                page: currentPage.value,
+                                page_size: pageSize.value,
+                                pan_type: currentPanType.value,
+                                category_id: currentCategory.value
+                            }
+                        });
+                        if (response.data.code === 200) {
+                            list.value = response.data.data.items || [];
+                            total.value = response.data.data.total || 0;
+                        } else {
+                            list.value = [];
+                            total.value = 0;
+                        }
+                    } catch (error) {
+                        console.error('加载数据失败:', error);
+                        list.value = [];
+                        total.value = 0;
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                // 切换网盘类型
+                const setPanType = (type) => {
+                    currentPanType.value = type;
+                    currentPage.value = 1;
+                    loadData();
+                };
+
+                // 切换分类
+                const setCategory = (id) => {
+                    currentCategory.value = id;
+                    currentPage.value = 1;
+                    loadData();
+                };
+
+                // 切换页码
+                const changePage = (page) => {
+                    if (page < 1 || page > totalPages.value) return;
+                    currentPage.value = page;
+                    loadData();
+                    // 滚动到顶部
+                    document.querySelector('.latest-content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+
+                // 显示资源弹窗
+                const showResourceDialog = (item) => {
+                    // 使用展开运算符复制对象，避免引用问题
+                    dialogItem.value = { ...item };
+                    dialogLoading.value = false;
+                    // 生成二维码
+                    if (item.showUrl) {
+                        setTimeout(() => {
+                            const qrcodeEl = document.getElementById('qrcode');
+                            if (qrcodeEl && window.qrcanvas) {
+                                qrcodeEl.innerHTML = '';
+                                const canvas = qrcanvas.qrcanvas({
+                                    data: item.showUrl,
+                                    size: 180
+                                });
+                                qrcodeEl.appendChild(canvas);
+                            }
+                        }, 100);
+                    }
+                };
+
+                // 复制到剪贴板
+                const copyToClipboard = (text) => {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            ElementPlus.ElMessage.success('复制成功');
+                        }).catch(() => {
+                            fallbackCopy(text);
+                        });
+                    } else {
+                        fallbackCopy(text);
+                    }
+                };
+
+                // 降级复制方案
+                const fallbackCopy = (text) => {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        ElementPlus.ElMessage.success('复制成功');
+                    } catch (err) {
+                        ElementPlus.ElMessage.error('复制失败，请手动复制');
+                    }
+                    document.body.removeChild(textArea);
+                };
+
+                // 迅雷下载
+                const downloadWithThunder = (url, title) => {
+                    const thunderUrl = 'thunder://' + btoa('AA' + url + 'ZZ');
+                    window.location.href = thunderUrl;
+                };
+
+                // 跳转到详情（改为显示弹窗）
+                const goToDetail = (item) => {
+                    // 增加浏览量（如果有id）
+                    if (item.id) {
+                        axios.post('/api/search/incrementViews', {
+                            id: item.id
+                        }).catch((err) => {
+                            console.log('浏览量增加失败:', err);
+                        });
+                    }
+                    
+                    dialogLoading.value = true;
+                    dialogUrl.value = true;
+                    dialogItem.value = {};
+
+                    const rawUrl = item.url || '';
+
+                    if (rawUrl.startsWith('http') || rawUrl.startsWith('magnet:')) {
+                        item.showUrl = rawUrl;
+                        showResourceDialog(item);
+                    } else {
+                        axios.post('/api/other/save_url', {
+                            url: encodeURIComponent(rawUrl),
+                            title: item.title
+                        }).then((res) => {
+                            if (res.data.code == 200) {
+                                item.url = res.data.data.url;
+                                item.showUrl = res.data.data.url;
+                            } else {
+                                item.showUrl = '';
+                                item.message = res.data.message || '获取失败';
+                            }
+                            showResourceDialog(item);
+                        }).catch(() => {
+                            item.showUrl = '';
+                            item.message = '网络错误，请重试';
+                            showResourceDialog(item);
+                        });
+                    }
+                };
+
+                // 初始化主题
+                const initTheme = () => {
+                    const savedTheme = localStorage.getItem('app-theme') || 'red';
+                    currentTheme.value = savedTheme;
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                };
+
+                // 切换下拉显示
+                const toggleThemeDropdown = () => {
+                    showThemeDropdown.value = !showThemeDropdown.value;
+                };
+
+                // 切换主题
+                const switchTheme = (theme) => {
+                    currentTheme.value = theme;
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('app-theme', theme);
+                    showThemeDropdown.value = false;
+                };
+
+                // 点击外部关闭下拉
+                const closeThemeDropdown = (e) => {
+                    if (themeSwitcherRef.value && !themeSwitcherRef.value.contains(e.target)) {
+                        showThemeDropdown.value = false;
+                    }
+                };
+
+                // 检测设备类型
+                const handleDeviceType = () => {
+                    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                    is_m.value = isMobile ? 1 : 0;
+                };
+
+                onMounted(() => {
+                    handleDeviceType();
+                    initTheme();
+                    loadData();
+                    document.addEventListener('click', closeThemeDropdown);
+                    window.addEventListener('resize', handleDeviceType);
+                });
+
+                onUnmounted(() => {
+                    document.removeEventListener('click', closeThemeDropdown);
+                    window.removeEventListener('resize', handleDeviceType);
+                });
+
+                return {
+                    drawer,
+                    qcodeVisible,
+                    loading,
+                    list,
+                    currentPage,
+                    pageSize,
+                    total,
+                    totalPages,
+                    currentPanType,
+                    currentCategory,
+                    panTypeList,
+                    categoryList,
+                    currentTheme,
+                    showThemeDropdown,
+                    themeSwitcherRef,
+                    dialogUrl,
+                    dialogLoading,
+                    dialogItem,
+                    is_m,
+                    pc_type,
+                    panTypeMap,
+                    setPanType,
+                    setCategory,
+                    changePage,
+                    goToDetail,
+                    copyToClipboard,
+                    downloadWithThunder,
+                    toggleThemeDropdown,
+                    switchTheme
+                };
+            }
+        });
+
+        app.use(ElementPlus);
+        app.mount('#app');
+        document.documentElement.removeAttribute('data-page-loading');
+
+        // 动态设置导航 active 状态（兼容后台自定义链接，纯原生 JS，所有页面通用）
+        (function() {
+            function setNavActive() {
+                var currentPath = window.location.pathname;
+                // 顶部导航
+                document.querySelectorAll('.top-nav-menu a').forEach(function(link) {
+                    var href = link.getAttribute('href') || '';
+                    if (href === currentPath || (href !== '/' && currentPath.indexOf(href) === 0)) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                // 手机端抽屉导航
+                document.querySelectorAll('.nav-drawer-menu a').forEach(function(link) {
+                    var href = link.getAttribute('href') || '';
+                    if (href === currentPath || (href !== '/' && currentPath.indexOf(href) === 0)) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setNavActive);
+            } else {
+                setNavActive();
+            }
+        })();
+
+        // 全局显示联系我们弹窗（供后台自定义导航调用）
+        function showQcode() {
+            // 尝试通过 Vue 实例打开弹窗
+            var appEl = document.querySelector('#app');
+            if (appEl && appEl.__vue_app__) {
+                var vm = appEl.__vue_app__._instance;
+                if (vm && vm.setupState && typeof vm.setupState.qcodeVisible !== 'undefined') {
+                    vm.setupState.qcodeVisible = true;
+                    return;
+                }
+                if (vm && vm.ctx && typeof vm.ctx.qcodeVisible !== 'undefined') {
+                    vm.ctx.qcodeVisible = true;
+                    return;
+                }
+            }
+            // 降级：直接查找 el-dialog 并强制显示
+            var overlays = document.querySelectorAll('.el-overlay');
+            for (var i = 0; i < overlays.length; i++) {
+                var dialog = overlays[i].querySelector('.qrcode-dialog, .el-dialog');
+                if (dialog || overlays[i].innerHTML.includes('联系我们')) {
+                    overlays[i].style.display = 'block';
+                    return;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,782 @@
+{include file="news/common/header"}
+</head>
+
+<body>
+    <div class="headBg" style="background-image: url({$config.home_bg});"></div>
+    <div id="app" v-cloak>
+        {include file="news/common/head"}
+        {notempty name="config.ad_list_top"}
+        <div class="ad-box">{$config.ad_list_top|raw}</div>
+        {/notempty}
+        <div class="searchBox searchList">
+            <div class="search">
+                <div class="select" @click="selectBtn" v-if="currentSource === 1">
+                    <span>{{panTypeMap[is_type] || '夸克网盘'}}</span>
+                    <i class="iconfont icon-xiala" style="font-size: 3vw"></i>
+                </div>
+                <div class="select" @click="selectBtn" v-else>
+                    {if condition="$category_id == ''"}全部{/if}
+                    {foreach $category as $key=>$vo }
+                    {if condition='$category_id == $vo.id'}{$vo.name}{/if}
+                    {/foreach}
+                    <i class="iconfont icon-xiala" style="font-size: 3vw"></i>
+                </div>
+                <input type="text" v-model="keyword" placeholder="可搜索一切资源" @keyup.enter="searchBtn"
+                    confirm-type="search" @confirm="searchBtn">
+                <div class="btn" @click="searchBtn">
+                    <i class="iconfont icon-sousuo"></i>
+                </div>
+            </div>
+        </div>
+        <div class="listBox">
+            <div class="screen">
+                <div class="fixed">
+                    <h3>筛选</h3>
+                    <div class="box" v-if="currentSource === 1">
+                        {foreach $displayList as $item}
+                        <a href="javascript:;" :class="{active: is_type=={$item.type}}" onclick="setType({$item.type})">
+                            {$item.name}
+                        </a>
+                        {/foreach}
+                    </div>
+
+                    <div class="box" v-else>
+                        <a href="/s/{$keyword}.html" class="{eq name='category_id' value='' }active{/eq}">全部</a>
+                        {foreach $category as $key=>$vo }
+                        <a href="/s/{$keyword}-1-{$vo.id}.html"
+                            class="{if condition='$category_id == $vo.id'}active{/if}">{$vo.name}</a>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+            <div class="left">
+                {if condition="$config.is_quan == 1"}
+                <div class="source-switch">
+                    <h3>切换搜索源：</h3>
+                    <div class="switch-items">
+                        <a href="javascript:;" onclick="switchSource(0)" :class="{active: currentSource==0}">本地搜</a>
+                        <a href="javascript:;" onclick="switchSource(1)" :class="{active: currentSource==1}">全网搜</a>
+                    </div>
+                </div>
+                {else /}
+                <h3 v-if="total_result>0">为您找到【<span>{$keyword}</span>】相关资源<span>&nbsp;{{total_result}}&nbsp;</span>条
+                </h3>
+                <h3 v-else>为您找到【<span>{$keyword}</span>】相关资源<span>&nbsp;{$list.total_result}&nbsp;</span>条</h3>
+                {/if}
+
+                <div class="box" v-show="currentSource === 0">
+                    {if condition="$list.total_result>0"}
+                    {if condition="$config.is_quan == 1"}
+                    <div class="Qbtn">
+                        <div class="btn">
+                            <p v-if="total_result>0">
+                                为您找到【<span>{$keyword}</span>】相关资源<span>&nbsp;{{total_result}}&nbsp;</span>条</p>
+                            <p v-else>为您找到【<span>{$keyword}</span>】相关资源<span>&nbsp;{$list.total_result}&nbsp;</span>条
+                            </p>
+                        </div>
+                    </div>
+                    {/if}
+                    <div class="list">
+                        {foreach $list.items as $key=>$vo }
+                        <div class="item" data-url="{$vo.url}" data-index="{$key}">
+                            <a href="javascript:;" onclick="linkBtn(this)" data-index="{$key}" class="title">
+                                {$vo.name|raw}
+                            </a>
+                            <!-- <div class="type cate">分类：{$vo.category.name|default='其它'}</div> -->
+                            <div class="type time">{$vo.times}</div>
+                            <div class="type">
+                                {if condition="isset($panTypeMap[$vo.is_type])"}
+                                <span>来源：{$panTypeMap[$vo.is_type]}</span>
+                                {else /}
+                                <span>来源：夸克网盘</span>
+                                {/if}
+                                {notempty name="vo.code"}
+                                <span>提取码：<span>{$vo.code}</span></span>
+                                {/notempty}
+                                <!-- 链接有效性检测状态标识 -->
+                                <span class="link-check-status" data-index="{$key}" style="margin-left: 8px;">
+                                    <span class="check-icon"></span>
+                                    <span class="status-text">检测中</span>
+                                </span>
+                            </div>
+                            <div class="btns">
+                                <div class="btn"
+                                    @click.stop="copyText($event,'{$vo.title|trim}','{$vo.url}','{$vo.code}')"><i
+                                        class="iconfont icon-fenxiang1"></i>复制分享</div>
+                                <a href="/d/{$vo.id}.html" class="btn"><i class="iconfont icon-fangwen"></i>查看详情</a>
+                                {if condition="$vo.is_type == 9"}
+                                <!-- 磁力链接使用迅雷下载 -->
+                                <a href="javascript:;" onclick="thunderDownload('{$vo.url}')" class="btn" style="background: #0099ff; color: white;">
+                                    <i class="iconfont icon-xiazai"></i>迅雷下载
+                                </a>
+                                {else /}
+                                <a href="javascript:;" onclick="linkBtn(this)" data-index="{$key}" class="btn">
+                                    <img src="__STATIC__/news/common/static/images/{$vo.is_type}.png" class="icon"
+                                        alt="立即访问" />
+                                    立即访问
+                                </a>
+                                {/if}
+                            </div>
+                        </div>
+                        {/foreach}
+                    </div>
+                    <div class="page">
+                        {notempty name="list.total_result"}
+                        <el-pagination background layout="prev, pager, next" :pager-count="3"
+                            :default-current-page="{$page_no}" :default-page-size="{$page_size}"
+                            :total="{$list.total_result}" @change="changeBtn"></el-pagination>
+                        {/notempty}
+                    </div>
+                    {else /}
+                    {if condition="$blocked == 1"}
+                    <div style="padding-top: 16px;">
+                        <el-alert title="搜索词中包含违规内容，请修改后重试" style="padding: 12px 0; font-weight: bold;" type="error"
+                            center :closable="false">
+                        </el-alert>
+                    </div>
+                    {/if}
+                    <el-empty style="margin-top: 10%;" :image-size="200" image="{$config.search_bg??''}"
+                        description="{$config.search_tips|default='未找到，可换个关键词尝试哦~'}">
+                        {if condition="$config.is_quan == 1"}
+                        <div class="vtips" onclick="switchSource(1)">请尝试切换&nbsp;“<a
+                                href="javascript:;">全网搜</a>”&nbsp;获取资源</div>
+                        {/if}
+                    </el-empty>
+                    {/if}
+                </div>
+
+                <div class="Ebox" v-show="currentSource === 1">
+                    <div class="Qloading" v-if="QLoading">
+                        <div class="loader"></div>
+                    </div>
+                    <div class="Qbtn">
+                        <div class="btn">
+                            <p>为您找到【<span>{$keyword}</span>】相关资源<span>&nbsp;{{QList.length}}&nbsp;</span>条</p>
+                        </div>
+                    </div>
+                    <div class="list">
+                        <div class="item" v-for="(item,index) in QList" :key="index" :data-url="item.url">
+                            <a href="javascript:;" onclick="getUrlBtn(this)" :data-index="index" class="title">
+                                {{item.title}}
+                            </a>
+                            <div class="type">
+                                <span>来源：{{panTypeMap[item.is_type] || '夸克网盘'}}</span>
+                                <!-- 链接有效性检测状态标识 -->
+                                <span class="link-check-status-vue" :data-index="index" style="margin-left: 8px;">
+                                    <span class="check-icon"></span>
+                                    <span class="status-text">检测中</span>
+                                </span>
+                            </div>
+                            <div class="btns2" onclick="getUrlBtn(this)" :data-index="index">
+                                获取资源
+                            </div>
+                        </div>
+                    </div>
+
+                    <template v-if="!QLoading && QList.length==0">
+                        {if condition="$blocked == 1"}
+                        <div style="padding-top: 16px;">
+                            <el-alert title="搜索词中包含违规内容，请修改后重试" style="padding: 12px 0; font-weight: bold;" type="error"
+                                center :closable="false">
+                            </el-alert>
+                        </div>
+                        {/if}
+                        <el-empty style="margin-top: 10%;" :image-size="200" image="{$config.search_bg??''}"
+                            description="{$config.search_tips|default='未找到，可换个关键词尝试哦~'}">
+                            {if condition="$config.is_quan == 1"}
+                            <div class="vtips" onclick="switchSource(0)">请尝试切换&nbsp;“<a
+                                    href="javascript:;">本地搜</a>”&nbsp;获取资源</div>
+                            {/if}
+                        </el-empty>
+                    </template>
+                </div>
+            </div>
+            <div class="right">
+                {volist name="hotList" id="vo"}
+                <div class="nav">
+                    {notempty name="vo.image"}
+                    <img src="{$vo.image}" alt="{$vo.name}">
+                    {/notempty}
+                    {$vo.name}
+                </div>
+                <div class="box">
+                    <div class="list">
+                        {volist name="vo.list" id="vos" length="5"}
+                        <a href="/s/{$vos.title}.html" class="item">
+                            <p>
+                                <span>{$key+1}</span>
+                                {$vos.title}
+                            </p>
+                        </a>
+                        {/volist}
+                    </div>
+                </div>
+                {/volist}
+            </div>
+        </div>
+        {notempty name="config.ad_list_bottom"}
+        <div class="ad-box">{$config.ad_list_bottom|raw}</div>
+        {/notempty}
+        {include file="news/common/foot"}
+    </div>
+    {include file="news/common/footer"}
+    <style>
+        /* 链接检测状态样式 */
+        .link-check-status, .link-check-status-vue {
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #f5f5f5;
+        }
+        .link-check-status .check-icon,
+        .link-check-status-vue .check-icon {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            margin-right: 4px;
+            border: 2px solid #999;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .link-check-status.valid,
+        .link-check-status-vue.valid {
+            color: #52c41a;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+        .link-check-status.valid .check-icon,
+        .link-check-status-vue.valid .check-icon {
+            animation: none;
+            border: none;
+            width: auto;
+            height: auto;
+        }
+        .link-check-status.invalid,
+        .link-check-status-vue.invalid {
+            color: #ff4d4f;
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+        }
+        .link-check-status.invalid .check-icon,
+        .link-check-status-vue.invalid .check-icon {
+            animation: none;
+            border: none;
+            width: auto;
+            height: auto;
+        }
+        .link-check-status.error,
+        .link-check-status-vue.error {
+            color: #faad14;
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+        }
+        .link-check-status.error .check-icon,
+        .link-check-status-vue.error .check-icon {
+            animation: none;
+            border: none;
+            width: auto;
+            height: auto;
+        }
+        .link-check-status .status-text,
+        .link-check-status-vue .status-text {
+            font-size: 11px;
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8">
+        app.rankList = JSON.parse('<?php echo json_encode($rankList, JSON_UNESCAPED_UNICODE); ?>');
+        for (const item of app.rankList) {
+            axios.get('/api/tool/ranking', {
+                params: {
+                    channel: item.name
+                }
+            })
+        }
+
+        function linkBtn(element) {
+            const index = element.getAttribute('data-index');
+            var jsonData = '<?php echo json_encode($list["items"], JSON_UNESCAPED_UNICODE); ?>';
+            jsonData = jsonData.replace(/[\x00-\x1F\x7F]/g, '');
+            var list = JSON.parse(jsonData);
+            const item = list[index];
+            if (app.pc_type == 1) {
+                safeJump(item.url);
+            } else {
+                item.showUrl = item.url
+                app.dialogUrl = true;
+                showUrlFun(item);
+            }
+        }
+
+        function safeJump(url, target = '_blank') {
+            const a = document.createElement('a');
+            a.href = url;
+            a.rel = 'noreferrer';
+            a.target = target;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // 迅雷下载磁力链接
+        function thunderDownload(magnetUrl) {
+            if (!magnetUrl || !magnetUrl.startsWith('magnet:')) {
+                app.showMessage('无效的磁力链接', 'error');
+                return;
+            }
+            // 生成迅雷协议链接: thunder:// + base64('AA' + magnetUrl + 'ZZ')
+            const thunderUrl = 'thunder://' + btoa('AA' + magnetUrl + 'ZZ');
+            safeJump(thunderUrl);
+        }
+
+        function getUrlBtn(element) {
+            app.dialogUrl = true;
+            const index = element.getAttribute('data-index');
+            const item = app.QList[index];
+            if (item.url.startsWith('http') || item.url.startsWith('magnet:')) {
+                item.showUrl = item.url
+                showUrlFun(item);
+            } else {
+                app.dialogLoading = true;
+                axios.post('/api/other/save_url', {
+                    url: encodeURIComponent(item.url),
+                    title: item.title
+                }).then(res => {
+                    if (res.data.code == 200) {
+                        item.url = res.data.data.url
+                        item.showUrl = res.data.data.url
+                    } else {
+                        item.showUrl = ''
+                        item.message = res.data.message
+                    }
+                    app.dialogLoading = false;
+                    showUrlFun(item)
+                })
+                    .catch(err => {
+                        app.dialogLoading = false
+                    })
+            }
+        }
+
+        function showUrlFun(item) {
+            // 如果是磁力链接，生成迅雷下载链接
+            if (item.showUrl && item.showUrl.startsWith('magnet:')) {
+                item.thunderUrl = 'thunder://' + btoa('AA' + item.showUrl + 'ZZ');
+            }
+            app.dialogItem = item
+            if (item.showUrl) {
+                var canvas = qrcanvas.qrcanvas({
+                    data: item.showUrl,
+                    size: 120
+                });
+                setTimeout(() => {
+                    document.getElementById('qrcode').appendChild(canvas);
+                }, 200);
+            }
+        }
+
+        let currentEventSource = null;
+        function setType(type) {
+            app.selectBtn()
+            if (type == app.is_type) return
+            app.is_type = type;
+            app.QLoading = false
+            app.QList = []
+            switchSource(1)
+        }
+        function switchSource(source) {
+            // 停止当前检测
+            stopLinkChecking();
+            stopLinkCheckingVue();
+            
+            app.currentSource = source;
+            if (app.currentSource == 1) {
+                if (app.QLoading || app.QList.length > 0) return
+
+                app.QLoading = true
+                app.QList = []
+
+                // 创建新的 EventSource 连接前，确保关闭旧的连接
+                if (currentEventSource) {
+                    currentEventSource.close();
+                }
+
+                // 创建 EventSource 连接
+                const params = new URLSearchParams({
+                    title: app.keyword,
+                    is_type: app.is_type
+                })
+                currentEventSource = new EventSource(`/api/other/web_search?${params.toString()}`)
+
+                // 监听消息
+                currentEventSource.onmessage = function (event) {
+                    if (event.data.includes('[DONE]')) {
+                        currentEventSource.close()
+                        currentEventSource = null
+                        app.QLoading = false
+                        // 全网搜索结束后检测链接有效性
+                        setTimeout(() => {
+                            batchCheckLinksVue();
+                        }, 1000);
+                        return
+                    }
+
+                    try {
+                        const data = JSON.parse(event.data)
+                        app.QList.push(data)
+                    } catch (e) {
+                    }
+                }
+
+                // 错误处理
+                currentEventSource.onerror = function (error) {
+                    console.error('SSE 连接错误:', error)
+                    currentEventSource.close()
+                    currentEventSource = null
+                    app.QLoading = false
+                    // 全网搜索结束后检测链接有效性
+                    setTimeout(() => {
+                        batchCheckLinksVue();
+                    }, 1000);
+                }
+            }
+        }
+
+        // ==================== 链接有效性检测功能 ====================
+        
+        // 检测状态标志
+        let isCheckingLinks = false;
+        let isCheckingLinksVue = false;
+        let shouldStopChecking = false;
+        let shouldStopCheckingVue = false;
+        
+        // 停止检测函数
+        function stopLinkChecking() {
+            if (isCheckingLinks) {
+                console.log('正在停止本地搜索检测...');
+                shouldStopChecking = true;
+            }
+        }
+        
+        function stopLinkCheckingVue() {
+            if (isCheckingLinksVue) {
+                console.log('正在停止全网搜索检测...');
+                shouldStopCheckingVue = true;
+            }
+        }
+        
+        // 逐条检测本地搜索结果的链接
+        async function batchCheckLinks() {
+            // 如果正在检测，先停止之前的
+            if (isCheckingLinks) {
+                console.log('本地搜索检测正在进行中，先停止之前的检测...');
+                stopLinkChecking();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            // 重置停止标志
+            shouldStopChecking = false;
+            
+            const items = document.querySelectorAll('.list .item[data-url]');
+            if (items.length === 0) return;
+            
+            // 收集所有链接和索引
+            const checkItems = [];
+            items.forEach((item) => {
+                const url = item.getAttribute('data-url');
+                const key = item.getAttribute('data-index');
+                if (url) {
+                    checkItems.push({ url, key });
+                }
+            });
+            
+            if (checkItems.length === 0) return;
+            
+            isCheckingLinks = true;
+            console.log('开始逐条检测本地搜索链接，共', checkItems.length, '条');
+            
+            try {
+                // 逐条检测
+                for (let i = 0; i < checkItems.length; i++) {
+                    // 检查是否需要停止
+                    if (shouldStopChecking) {
+                        console.log('本地搜索检测被中断');
+                        break;
+                    }
+                    
+                    // 检查是否还在当前页面
+                    const currentItems = document.querySelectorAll('.list .item[data-url]');
+                    if (currentItems.length === 0) {
+                        console.log('页面已切换，停止本地搜索检测');
+                        break;
+                    }
+                    
+                    const item = checkItems[i];
+                    console.log('检测第', i + 1, '条:', item.url);
+                    
+                    // 检测单条链接
+                    await checkSingleLink(item.url, item.key);
+                    
+                    // 添加小延迟，避免请求过快
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            } finally {
+                isCheckingLinks = false;
+                shouldStopChecking = false;
+                console.log('本地搜索链接检测完成');
+            }
+        }
+        
+        // 逐条检测全网搜索结果的链接
+        async function batchCheckLinksVue() {
+            // 如果正在检测，先停止之前的
+            if (isCheckingLinksVue) {
+                console.log('全网搜索检测正在进行中，先停止之前的检测...');
+                stopLinkCheckingVue();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            // 重置停止标志
+            shouldStopCheckingVue = false;
+            
+            if (!app.QList || app.QList.length === 0) return;
+            
+            isCheckingLinksVue = true;
+            console.log('开始逐条检测全网搜索链接，共', app.QList.length, '条');
+            
+            try {
+                // 逐条检测
+                for (let i = 0; i < app.QList.length; i++) {
+                    // 检查是否需要停止
+                    if (shouldStopCheckingVue) {
+                        console.log('全网搜索检测被中断');
+                        break;
+                    }
+                    
+                    // 检查 QList 是否还存在
+                    if (!app.QList || app.QList.length === 0) {
+                        console.log('数据已清空，停止全网搜索检测');
+                        break;
+                    }
+                    
+                    const item = app.QList[i];
+                    if (!item.url) continue;
+                    
+                    console.log('检测第', i + 1, '条:', item.url);
+                    
+                    // 检测单条链接
+                    await checkSingleLinkVue(item.url, i);
+                    
+                    // 添加小延迟，避免请求过快
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            } finally {
+                isCheckingLinksVue = false;
+                console.log('全网搜索链接检测完成');
+            }
+        }
+        
+        // 解密链接
+        async function decryptUrl(encryptedUrl) {
+            try {
+                console.log('开始解密链接:', encryptedUrl);
+                const response = await axios.post('/api/other/save_url', {
+                    url: encodeURIComponent(encryptedUrl),
+                    title: ''
+                });
+                console.log('解密接口返回:', response.data);
+                if (response.data.code == 200 && response.data.data && response.data.data.url) {
+                    console.log('解密成功:', response.data.data.url);
+                    return response.data.data.url;
+                }
+                console.log('解密失败: 返回数据格式不正确', response.data);
+                return null;
+            } catch (error) {
+                console.error('链接解密失败:', encryptedUrl, error);
+                return null;
+            }
+        }
+        
+        // 判断链接是否需要解密
+        function needsDecryption(url) {
+            if (!url) return false;
+            if (url.startsWith('http') || url.startsWith('magnet:')) return false;
+            return true;
+        }
+        
+        // 检测单条链接 (本地搜索)
+        async function checkSingleLink(url, key) {
+            try {
+                let checkUrl = url;
+                
+                // 检查链接是否需要解密
+                if (needsDecryption(url)) {
+                    console.log('链接需要解密:', url);
+                    const decryptedUrl = await decryptUrl(url);
+                    if (decryptedUrl) {
+                        console.log('链接解密成功，使用解密后的链接检测:', decryptedUrl);
+                        checkUrl = decryptedUrl;
+                    } else {
+                        console.log('链接解密失败，无法检测:', url);
+                        updateLinkStatus(key, { valid: null, error: '链接解密失败' });
+                        return;
+                    }
+                } else {
+                    console.log('链接不需要解密，直接检测:', url);
+                }
+                
+                const response = await fetch('/panchek/api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ links: [checkUrl] })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API 请求失败: ' + response.status);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.results && data.results.length > 0) {
+                    const result = data.results[0];
+                    console.log('检测结果:', url, 'valid:', result.valid);
+                    updateLinkStatus(key, result);
+                } else {
+                    updateLinkStatus(key, { valid: null, error: '返回数据错误' });
+                }
+            } catch (error) {
+                console.error('链接检测失败:', url, error);
+                updateLinkStatus(key, { valid: null, error: '检测失败' });
+            }
+        }
+        
+        // 检测单条链接 (全网搜索)
+        async function checkSingleLinkVue(url, index) {
+            try {
+                let checkUrl = url;
+                
+                // 检查链接是否需要解密
+                if (needsDecryption(url)) {
+                    console.log('链接需要解密:', url);
+                    const decryptedUrl = await decryptUrl(url);
+                    if (decryptedUrl) {
+                        console.log('链接解密成功，使用解密后的链接检测:', decryptedUrl);
+                        checkUrl = decryptedUrl;
+                    } else {
+                        console.log('链接解密失败，无法检测:', url);
+                        updateLinkStatusVue(index, { valid: null, error: '链接解密失败' });
+                        return;
+                    }
+                } else {
+                    console.log('链接不需要解密，直接检测:', url);
+                }
+                
+                const response = await fetch('/panchek/api.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ links: [checkUrl] })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API 请求失败: ' + response.status);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.results && data.results.length > 0) {
+                    const result = data.results[0];
+                    console.log('检测结果:', url, 'valid:', result.valid);
+                    updateLinkStatusVue(index, result);
+                } else {
+                    updateLinkStatusVue(index, { valid: null, error: '返回数据错误' });
+                }
+            } catch (error) {
+                console.error('链接检测失败:', url, error);
+                updateLinkStatusVue(index, { valid: null, error: '检测失败' });
+            }
+        }
+        
+        // 更新本地搜索链接状态显示
+        function updateLinkStatus(index, result) {
+            const statusEl = document.querySelector(`.link-check-status[data-index="${index}"]`);
+            if (!statusEl) {
+                console.log('updateLinkStatus: 未找到元素, index=', index);
+                return;
+            }
+            
+            console.log('更新本地搜索状态, index:', index, 'valid:', result.valid);
+            
+            // 清除所有状态类名
+            statusEl.classList.remove('valid', 'invalid', 'error');
+            
+            let html = '';
+            if (result.valid === true) {
+                html = '<span class="check-icon">✓</span><span class="status-text">有效</span>';
+                statusEl.classList.add('valid');
+            } else if (result.valid === false) {
+                html = '<span class="check-icon">✗</span><span class="status-text">失效</span>';
+                statusEl.classList.add('invalid');
+            } else {
+                html = '<span class="check-icon">!</span><span class="status-text">检测失败</span>';
+                statusEl.classList.add('error');
+            }
+            statusEl.innerHTML = html;
+        }
+        
+        // 更新全网搜索链接状态显示
+        function updateLinkStatusVue(index, result) {
+            const statusEl = document.querySelector(`.link-check-status-vue[data-index="${index}"]`);
+            if (!statusEl) {
+                console.log('updateLinkStatusVue: 未找到元素, index=', index);
+                return;
+            }
+            
+            console.log('更新全网搜索状态, index:', index, 'valid:', result.valid);
+            
+            // 清除所有状态类名
+            statusEl.classList.remove('valid', 'invalid', 'error');
+            
+            let html = '';
+            if (result.valid === true) {
+                html = '<span class="check-icon">✓</span><span class="status-text">有效</span>';
+                statusEl.classList.add('valid');
+            } else if (result.valid === false) {
+                html = '<span class="check-icon">✗</span><span class="status-text">失效</span>';
+                statusEl.classList.add('invalid');
+            } else {
+                html = '<span class="check-icon">!</span><span class="status-text">检测失败</span>';
+                statusEl.classList.add('error');
+            }
+            statusEl.innerHTML = html;
+        }
+
+        app.is_type = '{$firstKey}'
+        if ('{$config.is_quan}' == 1 && !'{$blocked}') {
+            let listItems = JSON.parse('<?php echo json_encode($list["items"], JSON_UNESCAPED_UNICODE); ?>');
+            if (listItems.length == 0) {
+                switchSource(1)
+            }
+        }
+        
+        // 页面加载完成后，检测本地搜索结果的链接
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延迟执行，确保页面渲染完成
+            setTimeout(() => {
+                batchCheckLinks();
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,2993 @@
+{include file="news/common/header"}
+<meta name="referrer" content="never">
+<style>
+    /* 隐藏原导航栏 */
+    .headerBox,
+    .headerKox {
+        display: none !important;
+    }
+    
+    /* 顶部导航栏样式 - 卡片式 */
+    #app > .top-nav {
+        background: transparent !important;
+        padding: 12px 16px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #app > .top-nav .top-nav-box {
+        width: 1048px !important;
+        max-width: calc(100% - 32px) !important;
+        margin: 0 auto !important;
+        padding: 6px 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        background: var(--theme-surface) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+        position: relative !important;
+        transition: background-color 0.3s ease !important;
+    }
+
+    #app > .top-nav .top-nav-logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        text-decoration: none !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-img,
+    #app > .top-nav .top-nav-logo .logo-placeholder {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-placeholder {
+        background: var(--theme-primary-gradient) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important;
+        font-weight: bold !important;
+        font-size: 14px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-text {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-title-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-name {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: var(--theme-text) !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-version {
+        font-size: 10px !important;
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+        padding: 1px 6px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+    }
+
+    #app > .top-nav .top-nav-logo .logo-subtitle {
+        font-size: 11px !important;
+        color: var(--theme-text-secondary) !important;
+        max-width: 20em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+        /* 如需多行截断，使用以下属性（会有警告但兼容性好） */
+        /* display: -webkit-box; */
+        /* -webkit-line-clamp: 2; */
+        /* -webkit-box-orient: vertical; */
+        /* white-space: normal; */
+    }
+
+    #app > .top-nav .top-nav-menu {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    #app > .top-nav .nav-menu-item {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+
+    #app > .top-nav .nav-menu-item:hover,
+    #app > .top-nav .nav-menu-item.active {
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+    
+    /* 后台配置的外链样式 */
+    #app > .top-nav .top-nav-menu > a {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        text-decoration: none !important;
+        display: inline-block !important;
+    }
+    
+    #app > .top-nav .top-nav-menu > a:hover,
+    #app > .top-nav .top-nav-menu > a.active {
+        color: var(--theme-primary) !important;
+        background: rgba(255, 107, 107, 0.1) !important;
+    }
+
+    #app > .top-nav .top-nav-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #app > .top-nav .nav-filter-btn {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+        color: var(--theme-text-secondary) !important;
+        cursor: pointer !important;
+        border-radius: 16px !important;
+        transition: all 0.2s ease !important;
+        border: 1px solid var(--theme-border) !important;
+    }
+
+    #app > .top-nav .nav-filter-btn:hover {
+        border-color: var(--theme-primary) !important;
+        color: var(--theme-primary) !important;
+    }
+
+    #app > .top-nav .nav-theme-btn {
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border: 1px solid var(--theme-border) !important;
+    }
+
+    #app > .top-nav .nav-theme-btn:hover {
+        background: var(--theme-background) !important;
+        color: var(--theme-primary) !important;
+    }
+
+    #app > .top-nav .nav-avatar {
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        background: var(--theme-surface) !important;
+        color: var(--theme-text) !important;
+        border: 1px solid var(--theme-border) !important;
+    }
+
+    #app > .top-nav .nav-avatar:hover {
+        background: #f5f5f5 !important;
+        color: var(--theme-primary) !important;
+    }
+
+    /* 主题切换器 */
+    #app > .top-nav .theme-switcher {
+        position: relative;
+        z-index: 1001;
+    }
+
+    #app > .top-nav .theme-switcher-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--theme-surface);
+        color: var(--theme-text-secondary);
+        border: 1px solid var(--theme-border);
+        font-size: 14px;
+    }
+
+    #app > .top-nav .theme-switcher-btn:hover {
+        background: var(--theme-background);
+        color: var(--theme-primary);
+        border-color: var(--theme-primary);
+    }
+
+    #app > .top-nav .theme-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: var(--theme-surface);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        padding: 8px;
+        min-width: 140px;
+        z-index: 9999;
+        border: 1px solid var(--theme-border);
+        transition: background-color 0.3s ease;
+    }
+
+    #app > .top-nav .theme-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--theme-text);
+    }
+
+    #app > .top-nav .theme-option:hover {
+        background: var(--theme-background);
+    }
+
+    #app > .top-nav .theme-option.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+
+    #app > .top-nav .theme-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    #app > .top-nav .theme-name {
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    #app > .top-nav .nav-menu-icon {
+        font-size: 20px !important;
+        cursor: pointer !important;
+        color: var(--theme-text-secondary) !important;
+        display: none !important;
+    }
+    
+    @media (max-width: 1024px) {
+        #app > .top-nav .top-nav-box {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #app > .top-nav .top-nav-menu,
+        #app > .top-nav .nav-filter-btn {
+            display: none !important;
+        }
+        #app > .top-nav .nav-menu-icon {
+            display: block !important;
+        }
+        #app > .top-nav .top-nav-logo .logo-subtitle {
+            display: none !important;
+        }
+        #app > .top-nav .theme-switcher-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 12px;
+        }
+        #app > .top-nav .theme-dropdown {
+            right: -40px;
+            min-width: 120px;
+        }
+        #app > .top-nav .theme-name {
+            font-size: 12px;
+        }
+    }
+</style>
+<style>
+    /* 首页新样式 - 参考 msmy.cn */
+    
+    /* 二维码弹窗样式 */
+    .qrcode-dialog {
+        background: #fff !important;
+        border-radius: 12px !important;
+        overflow: hidden;
+    }
+    .qrcode-dialog .el-dialog__header {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .qrcode-dialog .el-dialog__body {
+        background: #fff !important;
+        padding: 0 !important;
+    }
+    .el-overlay-dialog .qrcode-dialog {
+        border-radius: 12px;
+    }
+    
+    .home-container {
+        width: 1080px;
+        margin: 0 auto;
+        padding: 16px 16px 24px;
+    }
+
+    .home-main {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    /* 左侧搜索区域 */
+    .search-section {
+        flex: 1;
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    .search-header {
+        margin-bottom: 16px;
+    }
+
+    .search-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--theme-text);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-title .highlight {
+        background: var(--theme-primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    .search-subtitle {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        line-height: 1.5;
+        max-width: 364px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .search-box-wrapper {
+        position: relative;
+        margin-bottom: 8px;
+    }
+
+    .search-input-box {
+        display: flex;
+        align-items: center;
+        background: var(--theme-background);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .search-input-box:focus-within {
+        border-color: var(--theme-primary);
+        background: var(--theme-surface);
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+    }
+
+    .search-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--theme-text-secondary);
+        font-size: 18px;
+    }
+
+    .search-input-box input {
+        flex: 1;
+        height: 44px;
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        color: var(--theme-text);
+        outline: none;
+    }
+
+    .search-input-box input::placeholder {
+        color: var(--theme-text-secondary);
+    }
+
+    .input-search-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 44px;
+        color: var(--theme-text-secondary);
+        flex-shrink: 0;
+    }
+
+    .search-btn {
+        height: 38px;
+        padding: 0 20px;
+        margin: 3px;
+        background: var(--theme-primary-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(255, 107, 107, 0.35);
+    }
+
+    /* 热词区域 */
+    .hot-keywords {
+        margin-top: 8px;
+        margin-bottom: 2px;
+    }
+
+    .hot-keywords-label {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 8px;
+    }
+
+    .hot-keywords-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .hot-keyword {
+        padding: 5px 12px;
+        background: var(--theme-background);
+        border-radius: 16px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .hot-keyword:hover {
+        background: rgba(255, 107, 107, 0.1);
+        color: var(--theme-primary);
+        border-color: rgba(255, 107, 107, 0.3);
+    }
+
+    /* 提示文字 */
+    .search-tips {
+        margin-top: 0;
+        padding-top: 2px;
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        line-height: 1.5;
+    }
+
+    /* TMDB 影视信息 */
+    .tmdb-info {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        padding: 10px;
+        background: var(--theme-background);
+        border-radius: 6px;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .tmdb-poster {
+        flex-shrink: 0;
+        width: 60px;
+        height: 90px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: var(--theme-border);
+    }
+
+    .tmdb-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .tmdb-content {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .tmdb-title {
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tmdb-title-cn {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+
+    .tmdb-title-en {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        margin-left: 4px;
+    }
+
+    .tmdb-year {
+        font-size: 11px;
+        color: var(--theme-primary);
+        margin-bottom: 4px;
+    }
+
+    .tmdb-overview {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* 右侧信息卡片 */
+    .info-section {
+        width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .info-card {
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    .info-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .info-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+
+    .info-card-more {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+    }
+
+    .stats-grid {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .stat-item {
+        text-align: center;
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 4px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--theme-text);
+    }
+
+    /* 资源缺失卡片 */
+    .resource-missing {
+        background: var(--theme-background);
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .resource-missing-icon {
+        width: 120px;
+        height: 20px;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px auto 0;
+        color: var(--theme-primary);
+        position: relative;
+    }
+
+    .resource-missing-icon svg {
+        width: 80px;
+        height: 24px;
+        color: var(--theme-primary);
+    }
+
+
+
+    .resource-missing-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--theme-text);
+        margin-bottom: 4px;
+    }
+
+    .resource-missing-desc {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 12px;
+    }
+
+    .resource-missing-btns {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .resource-btn {
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .resource-btn-primary {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+
+    .resource-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+    }
+
+    .resource-btn-secondary {
+        background: var(--theme-surface);
+        color: var(--theme-text-secondary);
+        border: 1px solid var(--theme-border);
+    }
+
+    .resource-btn-secondary:hover {
+        border-color: var(--theme-primary);
+        color: var(--theme-primary);
+    }
+
+    /* 搜索结果区域 */
+    .search-result-section {
+        margin-top: 16px;
+        display: none;
+    }
+    
+    .search-result-section.show {
+        display: block;
+    }
+    
+    .search-result-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+    
+    .search-result-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .search-result-filter-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .pan-type-tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--theme-surface);
+        padding: 3px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .pan-type-tab {
+        padding: 3px 10px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+    
+    .pan-type-tab:hover {
+        color: var(--theme-primary);
+    }
+    
+    .pan-type-tab.active {
+        background: var(--theme-primary);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .pan-type-label {
+        color: var(--theme-text-secondary);
+        font-size: 12px;
+        margin-right: 8px;
+        margin-left: 4px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* 手机端网盘类型切换 - 默认隐藏 */
+    .pan-type-mobile {
+        display: none;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        background: var(--theme-surface);
+        padding: 3px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .pan-type-mobile::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pan-type-mobile-list {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+
+    .pan-type-mobile-btn {
+        padding: 3px 10px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        user-select: none;
+        border: none;
+        background: transparent;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .pan-type-mobile-btn:hover {
+        color: var(--theme-primary);
+    }
+
+    .pan-type-mobile-btn.active {
+        background: var(--theme-primary);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    /* 移动端网盘类型按钮组 - 默认隐藏 */
+    .pan-type-select-wrapper {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .pan-type-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .pan-type-header .search-result-close {
+        display: none;
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    .pan-type-label {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        font-weight: 500;
+    }
+
+    .pan-type-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .pan-type-btn {
+        padding: 3px 10px;
+        font-size: 11px;
+        border: 1px solid var(--theme-border);
+        border-radius: 10px;
+        background: var(--theme-surface);
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .pan-type-btn:hover {
+        border-color: var(--theme-primary);
+        color: var(--theme-primary);
+    }
+
+    .pan-type-btn.active {
+        background: var(--theme-primary-gradient);
+        border-color: var(--theme-primary);
+        color: #fff;
+        font-weight: 500;
+    }
+
+    /* 旧的下拉列表样式 - 保留兼容 */
+    .pan-type-dropdown {
+        display: none;
+    }
+
+    /* 移动端适配 */
+    @media screen and (max-width: 768px) {
+        .pan-type-tabs {
+            display: none;
+        }
+
+        .pan-type-mobile {
+            display: flex;
+        }
+
+        /* 手机端隐藏网盘类型文字标题 */
+        .pan-type-label {
+            display: none;
+        }
+
+        .pan-type-select-wrapper {
+            display: none !important;
+        }
+
+        .pan-type-header .search-result-close {
+            display: inline-flex;
+        }
+
+        /* 隐藏右侧信息卡片模块 */
+        .info-section {
+            display: none;
+        }
+    }
+    
+    .search-result-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--theme-text);
+    }
+
+    .search-result-title-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .search-result-title-icon {
+        color: var(--theme-primary);
+    }
+
+    .search-result-count {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+    }
+
+    .search-result-close {
+        cursor: pointer;
+        color: var(--theme-text-secondary);
+        font-size: 14px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .search-result-close:hover {
+        background: var(--theme-background);
+        color: var(--theme-text);
+    }
+
+    .search-result-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-result-item {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--theme-surface);
+        border-radius: 12px;
+        border: 1px solid var(--theme-border);
+        transition: all 0.25s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .search-result-item:hover {
+        border-color: var(--theme-primary);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-result-cover {
+        width: 100px;
+        height: 130px;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--theme-background);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--theme-text-secondary);
+        font-size: 12px;
+    }
+
+    .search-result-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .search-result-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-result-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--theme-text);
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .search-result-desc {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .search-result-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .search-result-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 3px 9px;
+        border-radius: 14px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    
+    .search-result-tag.type {
+        background: var(--theme-primary);
+        color: #fff;
+    }
+
+    .search-result-tag.source {
+        background: var(--theme-background);
+        color: var(--theme-text-secondary);
+        border: 1px solid var(--theme-border);
+    }
+
+    .search-result-tag.time {
+        background: var(--theme-card);
+        color: var(--theme-text);
+    }
+
+    .search-result-tag.local {
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .search-result-actions {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        align-self: center;
+    }
+
+    .search-result-files {
+        width: 100%;
+        flex-basis: 100%;
+        margin-top: 10px;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+    }
+    
+    .search-result-btn {
+        padding: 5px 16px;
+        border-radius: 18px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        min-width: 70px;
+    }
+    
+    .search-result-btn.valid {
+        background: var(--theme-card);
+        color: var(--theme-text);
+        border: 1px solid var(--theme-border);
+    }
+
+    .search-result-btn.detail {
+        background: var(--theme-background);
+        color: var(--theme-text-secondary);
+        border: none;
+    }
+
+    .search-result-btn.get {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+        border: none;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .search-result-loading,
+    .search-result-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--theme-text-secondary);
+        font-size: 14px;
+    }
+
+    .search-result-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .search-result-loading i {
+        animation: spin 1s linear infinite;
+        font-size: 32px;
+        color: var(--theme-primary);
+    }
+
+    .search-result-loading .loading-text {
+        position: relative;
+    }
+
+    .search-result-loading .loading-text::after {
+        content: '';
+        animation: loadingDots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes loadingDots {
+        0% { content: ''; }
+        25% { content: '.'; }
+        50% { content: '..'; }
+        75% { content: '...'; }
+        100% { content: ''; }
+    }
+
+    .search-result-loading .loading-pulse {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--theme-primary-gradient);
+        opacity: 0.3;
+        animation: pulse 1.5s ease-in-out infinite;
+        position: absolute;
+    }
+
+    .search-result-loading .loading-pulse:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+
+    .search-result-loading .loading-pulse:nth-child(3) {
+        animation-delay: 1s;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0.2;
+        }
+        100% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+    }
+
+    .search-result-loading .loading-wrapper {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-result-loading .loading-wrapper i {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 资源弹窗样式 */
+    .el-overlay .el-dialog.resource-dialog,
+    .el-overlay-dialog .resource-dialog,
+    .resource-dialog {
+        background: var(--theme-surface) !important;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    }
+    .resource-dialog .el-dialog__header {
+        padding: 16px 20px;
+        margin: 0;
+        border-bottom: 1px solid var(--theme-border);
+        background: var(--theme-surface) !important;
+    }
+    .resource-dialog .el-dialog__header .el-dialog__title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+    .resource-dialog .el-dialog__body {
+        padding: 0;
+        background: var(--theme-surface) !important;
+    }
+    .resource-dialog-content {
+        padding: 24px;
+        background: var(--theme-surface) !important;
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+    }
+    .loading-spinner {
+        position: relative;
+        width: 60px;
+        height: 60px;
+    }
+    .spinner-ring {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: var(--theme-primary);
+        animation: spin 1.2s linear infinite;
+    }
+    .spinner-ring:nth-child(1) {
+        width: 100%;
+        height: 100%;
+        animation-duration: 1.2s;
+    }
+    .spinner-ring:nth-child(2) {
+        width: 75%;
+        height: 75%;
+        top: 12.5%;
+        left: 12.5%;
+        animation-duration: 0.9s;
+        animation-direction: reverse;
+        border-top-color: var(--theme-primary-light, #7c9aff);
+    }
+    .spinner-ring:nth-child(3) {
+        width: 50%;
+        height: 50%;
+        top: 25%;
+        left: 25%;
+        animation-duration: 0.6s;
+        border-top-color: var(--theme-primary-dark, #4a6cf7);
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .loading-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+    .loading-subtext {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+    }
+    .normal-content, .magnet-content, .error-content {
+        text-align: center;
+        background: var(--theme-surface);
+    }
+    .success-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--theme-text);
+        margin-bottom: 8px;
+    }
+    .resource-subtitle {
+        font-size: 13px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 16px;
+        padding: 0 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .scan-tip {
+        font-size: 15px;
+        color: var(--theme-text);
+        margin-bottom: 6px;
+    }
+    .scan-tip .pan-name {
+        color: var(--theme-primary);
+        font-weight: 500;
+    }
+    .scan-desc {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 20px;
+    }
+    .qrcode-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .qrcode-wrapper .qrcode {
+        width: 180px;
+        height: 180px;
+        border: 1px solid var(--theme-border);
+        border-radius: 8px;
+        padding: 8px;
+        background: #fff;
+    }
+    .qrcode-wrapper .qrcode canvas {
+        width: 100%;
+        height: 100%;
+    }
+    .url-box {
+        background: var(--theme-background);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        text-align: left;
+    }
+    .url-label {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 4px;
+    }
+    .url-text {
+        font-size: 13px;
+        color: var(--theme-primary);
+        word-break: break-all;
+        line-height: 1.5;
+    }
+    .tip-text {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 20px;
+    }
+    .dialog-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .dialog-actions .btn-primary {
+        padding: 10px 24px;
+        background: var(--theme-primary);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .dialog-actions .btn-primary:hover {
+        background: var(--theme-primary);
+        filter: brightness(1.1);
+    }
+    .dialog-actions .btn-secondary {
+        padding: 10px 24px;
+        background: var(--theme-surface);
+        color: var(--theme-text);
+        border: 1px solid var(--theme-border);
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .dialog-actions .btn-secondary:hover {
+        background: var(--theme-border);
+    }
+    .error-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #ff4d4f;
+        margin-bottom: 12px;
+    }
+    .error-message {
+        font-size: 14px;
+        color: var(--theme-text-secondary);
+        margin-bottom: 20px;
+    }
+
+    /* 最近更新列表区域 */
+    .latest-section {
+        margin-top: 16px;
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    /* 热门搜索区域特殊样式 */
+    .hot-section {
+        background: var(--theme-surface);
+    }
+
+    .hot-icon {
+        color: #f59e0b;
+        font-size: 18px;
+    }
+
+    .hot-section .latest-item-index {
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+    }
+
+    .hot-section .latest-item-index.top3 {
+        background: linear-gradient(135deg, #ef4444, #f97316);
+    }
+
+    .latest-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .latest-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--theme-text);
+    }
+
+    .latest-title-icon {
+        color: var(--theme-primary);
+    }
+
+    .latest-more {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: color 0.2s ease;
+    }
+
+    .latest-more:hover {
+        color: var(--theme-primary);
+    }
+
+    .latest-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .latest-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: var(--theme-background);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 0;
+    }
+
+    .latest-item:hover {
+        background: var(--theme-border);
+        transform: translateY(-1px);
+    }
+
+    .latest-item-index {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--theme-primary);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+
+    .latest-item-index.top3 {
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    }
+
+    .latest-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .latest-item-title {
+        font-size: 13px;
+        color: var(--theme-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+        max-width: 100%;
+    }
+
+    .latest-item-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+    }
+
+    .latest-item-tag {
+        padding: 1px 5px;
+        background: var(--theme-primary);
+        color: #fff;
+        border-radius: 3px;
+        font-size: 10px;
+    }
+
+    .latest-item-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 30px;
+        color: var(--theme-text-secondary);
+        font-size: 13px;
+    }
+
+    /* 第三方热播榜区域 */
+    .ranking-section {
+        margin-top: 16px;
+    }
+    
+    .ranking-header {
+        margin-bottom: 12px;
+    }
+    
+    .ranking-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--theme-text);
+        margin-bottom: 4px;
+    }
+
+    .ranking-title-icon {
+        color: var(--theme-primary);
+    }
+
+    .ranking-subtitle {
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+    }
+
+    /* Tab 切换 */
+    .tab-list {
+        display: flex;
+        gap: 4px;
+        background: var(--theme-surface);
+        border-radius: 8px;
+        padding: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 8px;
+        transition: background-color 0.3s ease;
+    }
+
+    .tab-item {
+        padding: 4px 12px;
+        font-size: 12px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        border: none;
+        background: transparent;
+    }
+
+    .tab-item.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+
+    .tab-item:hover:not(.active) {
+        background: var(--theme-background);
+        color: var(--theme-text);
+    }
+    
+    .tab-refresh {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        color: #999;
+        cursor: pointer;
+        padding: 3px 8px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .tab-refresh:hover {
+        background: var(--theme-background);
+        color: var(--theme-text);
+    }
+
+    /* 三列卡片网格 */
+    .ranking-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .ranking-card {
+        background: var(--theme-surface);
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: background-color 0.3s ease;
+    }
+
+    .ranking-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+    
+    .ranking-card-title-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .ranking-card-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .ranking-card-icon svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+    }
+    
+    .ranking-icon-hot {
+        background: rgba(255, 107, 107, 0.1);
+        color: var(--theme-primary);
+    }
+    
+    .ranking-icon-new {
+        background: rgba(255, 142, 83, 0.1);
+        color: var(--theme-primary-light);
+    }
+    
+    .ranking-icon-good {
+        background: rgba(255, 169, 64, 0.1);
+        color: #ffa940;
+    }
+    
+    .ranking-card-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+
+    .ranking-card-date {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        margin-left: 8px;
+    }
+
+    .ranking-card-more {
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .ranking-card-more:hover {
+        color: var(--theme-primary);
+    }
+    
+    /* 带封面的列表项 */
+    .ranking-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .ranking-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    
+    .ranking-item:hover {
+        background: var(--theme-background);
+    }
+
+    .ranking-rank {
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--theme-text-secondary);
+        background: var(--theme-background);
+        flex-shrink: 0;
+    }
+    
+    .ranking-rank.top1 {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+    .ranking-rank.top2 {
+        background: var(--theme-secondary-gradient);
+        color: #fff;
+    }
+    .ranking-rank.top3 {
+        background: var(--theme-tertiary-gradient);
+        color: #fff;
+    }
+    
+    .ranking-cover {
+        width: 40px;
+        height: 54px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--theme-border);
+        flex-shrink: 0;
+    }
+
+    .ranking-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .ranking-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ranking-item-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--theme-text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 2px;
+    }
+    
+    .ranking-meta {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        color: var(--theme-text-secondary);
+    }
+
+    .ranking-meta span {
+        white-space: nowrap;
+    }
+
+    .ranking-score {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--theme-text-secondary);
+        flex-shrink: 0;
+    }
+    
+    .ranking-item:hover .ranking-item-title {
+        color: var(--theme-primary);
+    }
+
+    @media (max-width: 1024px) {
+        .home-container {
+            width: 100%;
+            padding: 16px;
+        }
+        .home-main {
+            flex-direction: column;
+        }
+        .info-section {
+            width: 100%;
+        }
+        .ranking-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .search-section {
+            padding: 16px;
+        }
+        .search-title {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        .search-subtitle {
+            font-size: 11px;
+        }
+        .search-input-box input {
+            height: 40px;
+            font-size: 13px;
+        }
+        .search-btn {
+            height: 34px;
+            padding: 0 16px;
+            font-size: 12px;
+        }
+        .input-search-icon {
+            height: 40px;
+            width: 32px;
+        }
+        .hot-keyword {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+        .search-tips {
+            font-size: 10px;
+        }
+        .tmdb-title-cn {
+            font-size: 12px;
+        }
+        .tmdb-title-en {
+            font-size: 10px;
+        }
+        .tmdb-year {
+            font-size: 10px;
+        }
+        .tmdb-overview {
+            font-size: 10px;
+        }
+        .stats-grid {
+            gap: 10px;
+        }
+        .stat-value {
+            font-size: 16px;
+        }
+        /* 手机端：榜单卡片堆叠显示，每个卡片内部是网格 */
+        .ranking-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .ranking-card {
+            padding: 10px;
+        }
+        .ranking-card-header {
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+        .ranking-card-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+        }
+        .ranking-card-icon svg {
+            width: 12px;
+            height: 12px;
+        }
+        .ranking-card-name {
+            font-size: 13px;
+        }
+        .ranking-card-date {
+            font-size: 10px;
+        }
+        .ranking-card-more {
+            font-size: 10px;
+        }
+        /* 列表项改为紧凑卡片 */
+        .ranking-list {
+            gap: 4px;
+        }
+        .ranking-item {
+            padding: 4px;
+            gap: 4px;
+        }
+        .ranking-rank {
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            border-radius: 4px;
+        }
+        .ranking-cover {
+            width: 28px;
+            height: 38px;
+            border-radius: 3px;
+        }
+        .ranking-info {
+            min-width: 0;
+        }
+        .ranking-title {
+            font-size: 10px;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+        }
+        .ranking-meta {
+            font-size: 9px;
+        }
+        
+        /* 隐藏第三方热播榜标题和副标题 */
+        .ranking-section .ranking-title,
+        .ranking-section .ranking-subtitle {
+            display: none !important;
+        }
+        
+        /* 手机端卡片网格样式 */
+        .ranking-grid-mobile {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 4px;
+        }
+        
+        .ranking-card-mobile {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .ranking-card-cover {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3/4;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+        
+        .ranking-card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .ranking-card-rank {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+            z-index: 1;
+        }
+        
+        .ranking-card-rank.top1 {
+            background: var(--theme-primary-gradient);
+        }
+        
+        .ranking-card-rank.top2 {
+            background: linear-gradient(135deg, #ff8e53 0%, #ffa940 100%);
+        }
+        
+        .ranking-card-rank.top3 {
+            background: linear-gradient(135deg, #ffa940 0%, #ffc53d 100%);
+        }
+        
+        .ranking-card-title {
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #333;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            text-align: center;
+        }
+        
+        .tab-list {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding: 6px;
+            gap: 3px;
+        }
+        
+        .tab-item {
+            padding: 3px 10px;
+            font-size: 11px;
+            border-radius: 10px;
+            white-space: nowrap;
+        }
+        
+        .tab-refresh {
+            font-size: 10px;
+            padding: 2px 6px;
+        }
+        
+        /* 搜索结果手机端适配 */
+        .search-result-header {
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        .search-result-title {
+            font-size: 14px;
+        }
+        .search-result-title-left {
+            gap: 4px;
+        }
+        .search-result-title-icon {
+            font-size: 14px;
+        }
+        .search-result-count {
+            font-size: 11px;
+        }
+
+        /* 资源弹窗手机端适配 */
+        .el-overlay .el-dialog.resource-dialog,
+        .el-overlay-dialog .resource-dialog,
+        .resource-dialog {
+            width: 92vw !important;
+            max-width: 400px;
+            background: var(--theme-surface) !important;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+        }
+        .resource-dialog .el-dialog__header,
+        .resource-dialog .el-dialog__body {
+            background: var(--theme-surface) !important;
+        }
+        .resource-dialog-content {
+            padding: 16px;
+            background: var(--theme-surface) !important;
+        }
+        .success-title {
+            font-size: 18px;
+        }
+        .scan-tip {
+            font-size: 14px;
+        }
+        .qrcode-wrapper .qrcode {
+            width: 160px;
+            height: 160px;
+        }
+        .url-box {
+            padding: 10px 12px;
+        }
+        .dialog-actions {
+            gap: 8px;
+        }
+        .dialog-actions .btn-primary,
+        .dialog-actions .btn-secondary {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* 最近更新列表手机端适配 */
+        .latest-section {
+            margin-top: 12px;
+            padding: 12px;
+        }
+        .latest-title {
+            font-size: 14px;
+        }
+        .latest-list {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .latest-item {
+            padding: 8px 10px;
+        }
+        .latest-item-title {
+            font-size: 12px;
+        }
+        .search-result-close {
+            font-size: 12px;
+        }
+        .pan-type-select {
+            padding: 4px 20px 4px 10px;
+            font-size: 12px;
+            min-width: 80px;
+        }
+        .pan-type-label {
+            padding: 4px 6px 4px 10px;
+            font-size: 12px;
+        }
+        .search-result-item {
+            padding: 12px;
+            gap: 10px;
+        }
+        .search-result-cover {
+            width: 70px;
+            height: 90px;
+        }
+        .search-result-info {
+            gap: 6px;
+        }
+        .search-result-name {
+            font-size: 13px;
+            line-height: 1.3;
+        }
+        .search-result-desc {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .search-result-tag {
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+        .search-result-actions {
+            gap: 6px;
+        }
+        .search-result-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            min-width: 60px;
+            border-radius: 14px;
+        }
+        .search-result-loading,
+        .search-result-empty {
+            padding: 30px 16px;
+            font-size: 12px;
+        }
+        .search-result-loading i {
+            font-size: 24px;
+        }
+    }
+    
+    /* 手机端导航抽屉 - 紧凑样式 */
+    .nav-drawer .el-dialog__header {
+        display: none;
+    }
+    .nav-drawer .el-dialog__body {
+        padding: 0;
+    }
+    
+    /* 联系我们弹窗 - 防止初始加载时显示 */
+    .qrcode-dialog {
+        display: none;
+    }
+    .el-overlay .qrcode-dialog {
+        display: block;
+    }
+    .nav-drawer-content {
+        background: var(--theme-surface);
+    }
+    .nav-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--theme-border);
+    }
+    .nav-drawer-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--theme-text);
+    }
+    .nav-drawer-close {
+        font-size: 16px;
+        color: var(--theme-text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    .nav-drawer-close:hover {
+        background: var(--theme-background);
+        color: var(--theme-text);
+    }
+    .nav-drawer-menu {
+        padding: 8px;
+    }
+    .nav-drawer-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+    .nav-drawer-item:last-child {
+        margin-bottom: 0;
+    }
+    .nav-drawer-item:hover {
+        background: var(--theme-background);
+    }
+    .nav-drawer-item.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+    
+    /* 后台配置的外链样式 - 手机端抽屉 */
+    .nav-drawer-menu > a {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+    .nav-drawer-menu > a:last-child {
+        margin-bottom: 0;
+    }
+    .nav-drawer-menu > a:hover,
+    .nav-drawer-menu > a.active {
+        background: var(--theme-primary-gradient);
+        color: #fff;
+    }
+</style>
+</head>
+
+<body>
+    <div class="headBg" style="background-image: url({$config.home_bg});display:none;"></div>
+    <div id="app" v-cloak>
+        
+        <!-- 顶部导航栏 -->
+        <div class="top-nav">
+            <div class="top-nav-box">
+                <a href="/" class="top-nav-logo">
+                    {notempty name="config.logo"}
+                    <img class="logo-img" src="{$config.logo}" alt="{$config.app_name}">
+                    {else/}
+                    <div class="logo-placeholder">MS</div>
+                    {/notempty}
+                    <div class="logo-text">
+                        <div class="logo-title-row">
+                            <span class="logo-name">{$config.app_name|default='妙搜云'}</span>
+                            <span class="logo-version">Ver2.1</span>
+                        </div>
+                        <span class="logo-subtitle">{$config.app_description|default='专业网盘资源搜索分享平台'}</span>
+                    </div>
+                </a>
+                
+                <div class="top-nav-menu">
+                    {notempty name="config.app_links"}
+                        {$config.app_links|raw}
+                    {else/}
+                        <a href="/" class="nav-menu-item active">搜索</a>
+                        <a href="/ranking" class="nav-menu-item">热播榜</a>
+                        <a href="/latest" class="nav-menu-item">最近更新</a>
+                        <div class="nav-menu-item" @click="qcodeVisible = true">联系我们</div>
+                    {/notempty}
+                </div>
+                
+                <div class="top-nav-actions">
+                    <!-- 主题切换 -->
+                    <div class="theme-switcher" ref="themeSwitcherRef">
+                        <div class="theme-switcher-btn" @click.stop="toggleThemeDropdown" title="切换主题">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </div>
+                        <div class="theme-dropdown" v-show="showThemeDropdown">
+                            <div class="theme-option" :class="{active: currentTheme === 'red'}" @click="switchTheme('red')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);"></span>
+                                <span class="theme-name">暖红</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'blue'}" @click="switchTheme('blue')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #4a90e2 0%, #5fa3f0 100%);"></span>
+                                <span class="theme-name">海洋蓝</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'green'}" @click="switchTheme('green')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"></span>
+                                <span class="theme-name">森林绿</span>
+                            </div>
+                            <div class="theme-option" :class="{active: currentTheme === 'dark'}" @click="switchTheme('dark')">
+                                <span class="theme-dot" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);"></span>
+                                <span class="theme-name">暗夜黑</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-menu-icon iconfont icon-caidan" @click="drawer = true"></div>
+                </div>
+            </div>
+        </div>
+
+        {notempty name="config.ad_home_top"}
+        <div class="ad-box">{$config.ad_home_top|raw}</div>
+        {/notempty}
+        <div class="home-container">
+            <!-- 主搜索区域 -->
+            <div class="home-main">
+                <!-- 左侧搜索 -->
+                <div class="search-section">
+                    <div class="search-header">
+                        <div class="search-title">
+                            一站式 <span class="highlight">网盘资源搜索</span>
+                        </div>
+                        <div class="search-subtitle">
+                            聚合多个网盘来源，快速找到可用链接；同步提供第三方热播榜参考。
+                        </div>
+                    </div>
+                    
+                    <div class="search-box-wrapper">
+                        <div class="search-input-box">
+                            <span class="input-search-icon">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                            </span>
+                            <input type="text" v-model="keyword" placeholder="搜索：可搜索一切资源" @keyup.enter="searchBtn">
+                            <button class="search-btn" @click="searchBtn">搜索</button>
+                        </div>
+                    </div>
+                    
+                    {php}
+                        // 获取排序第一的线路作为默认选中
+                        $panTypeKeys = array_keys($panTypeMap ?? []);
+                        $defaultPanType = strval($panTypeKeys[0] ?? 9);
+                    {/php}
+                    <!-- 网盘类型切换 - 电脑端 -->
+                    <div class="pan-type-tabs" id="searchPanTypeTabs" style="margin-top: 0px;">
+                        <span class="pan-type-label">网盘类型</span>
+                        {volist name="panTypeMap" id="panName"}
+                        <span class="pan-type-tab {if $key == $defaultPanType}active{/if}" data-type="{$key}" onclick="switchPanType(this)">{$panName}</span>
+                        {/volist}
+                    </div>
+
+                    <!-- 网盘类型切换 - 手机端 -->
+                    <div class="pan-type-mobile" id="searchPanTypeMobile" style="margin-top: 0px;">
+                        <span class="pan-type-label">网盘类型</span>
+                        <div class="pan-type-mobile-list">
+                            {volist name="panTypeMap" id="panName"}
+                            <button class="pan-type-mobile-btn {if $key == $defaultPanType}active{/if}" data-type="{$key}" onclick="switchPanTypeMobile(this)">{$panName}</button>
+                            {/volist}
+                        </div>
+                    </div>
+                    
+                    <!-- TMDB 影视信息 -->
+                    <div class="tmdb-info" v-if="tmdbData.title" v-loading="tmdbLoading">
+                        <div class="tmdb-poster">
+                            <img :src="tmdbData.poster_url" :alt="tmdbData.title" v-if="tmdbData.poster_url">
+                        </div>
+                        <div class="tmdb-content">
+                            <div class="tmdb-title">
+                                <span class="tmdb-title-cn">{{tmdbData.title}}</span>
+                                <span class="tmdb-title-en" v-if="tmdbData.original_title">({{tmdbData.original_title}})</span>
+                            </div>
+                            <div class="tmdb-year" v-if="tmdbData.release_date">{{tmdbData.release_date.substring(0, 4)}}</div>
+                            <div class="tmdb-overview">{{tmdbData.overview}}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧信息卡片 -->
+                <div class="info-section">
+                    <!-- 今日概览 -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <span class="info-card-title">今日概览</span>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">今日搜索</div>
+                                <div class="stat-value">{$searchStats.today_formatted|default='0'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">总搜索量</div>
+                                <div class="stat-value">{$searchStats.total_formatted|default='3.6K'}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">搜索耗时</div>
+                                <div class="stat-value" id="searchDuration">{$loadTime|default='0.26s'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 资源缺失 -->
+                    <div class="info-card" style="background: var(--theme-card-gradient); min-height: 180px; display: flex; flex-direction: column; justify-content: center;">
+                        <div id="clearCacheIcon" class="resource-missing-icon-circle" style="width: 48px; height: 48px; background: var(--theme-primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); cursor: pointer;" title="三连击清除缓存">
+                            <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10422" height="24" width="24" fill="#fff"><path d="M68.4 590.616C31.326 681.38 24.934 767.034 54.337 782.374c20.455 11.505 53.692-14.062 84.374-60.085 11.505 51.136 42.187 95.88 84.373 132.953-44.743 16.62-74.146 44.743-74.146 75.425 0 51.135 79.259 93.322 176.418 93.322 88.208 0 161.076-33.238 175.138-77.982h20.455c14.06 44.744 86.93 77.982 175.138 77.982 98.437 0 176.418-40.909 176.418-93.322 0-30.682-29.403-58.806-74.146-75.425 42.186-37.074 72.868-81.817 84.374-132.953 30.68 46.023 62.64 71.59 84.373 60.085 30.682-15.34 24.29-102.271-14.062-191.758-29.403-70.312-69.033-122.726-99.715-134.23 0-3.837 1.28-8.95 1.28-14.064 0-26.845-7.67-52.413-20.455-72.868v-5.113c0-12.784-2.556-24.29-7.67-34.517C818.814 145.736 701.2 0 510.722 0 320.242 0 202.63 145.736 194.959 329.824c-5.113 10.227-7.67 21.733-7.67 34.517v5.113c-12.783 20.455-20.454 46.023-20.454 72.87v14.061c-28.124 11.505-69.033 62.64-98.435 134.23z" p-id="10423"></path></svg>
+                        </div>
+                        <div class="resource-missing" style="background: transparent; padding: 0;">
+                            <div class="resource-missing-title">资源缺失</div>
+                            <div class="resource-missing-desc">加入群聊获取更多资源，或联系管理员求助。</div>
+                            <div class="resource-missing-btns">
+                                <button class="resource-btn resource-btn-primary" @click="qcodeVisible = true">联系我们</button>
+                            </div>
+                        </div>
+                        <div class="search-tips" style="margin-top: 8px; padding-top: 4px; text-align: center;">
+                            提示：本站仅做资源索引，完全免费，请勿相信广告，谨防上当受骗。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 搜索结果区域 -->
+            <div class="search-result-section" id="searchResultSection">
+                <div class="search-result-header">
+                    <div class="search-result-title">
+                        <div class="search-result-title-left">
+                            <span class="search-result-title-icon">🔍</span>
+                            搜索结果
+                            <span class="search-result-count" id="searchResultCount"></span>
+                        </div>
+                        <span class="search-result-close desktop-close" onclick="closeSearchResult()">
+                            <i class="iconfont icon-guanbi"></i> 关闭
+                        </span>
+                    </div>
+                </div>
+                <div id="searchResultContent">
+                    <div class="search-result-loading">
+                        <div class="loading-wrapper">
+                            <div class="loading-pulse"></div>
+                            <div class="loading-pulse"></div>
+                            <div class="loading-pulse"></div>
+                            <i class="iconfont icon-jiazai"></i>
+                        </div>
+                        <div class="loading-text">正在全网搜索</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门搜索列表区域 -->
+            {if condition="$config.home_new == 0"}
+            <div class="latest-section hot-section" id="hotSection">
+                <div class="latest-header">
+                    <div class="latest-title">
+                        <span class="latest-title-icon hot-icon">🔥</span>
+                        热门搜索
+                    </div>
+                    <a href="/latest" class="latest-more">
+                        <i class="iconfont icon-gengduo"></i> 查看更多
+                    </a>
+                </div>
+                <div class="latest-list" id="hotList">
+                    <!-- 数据通过 JS 加载 -->
+                </div>
+            </div>
+            {/if}
+
+            <!-- 最近更新列表区域 -->
+            {if condition="$config.home_new == 0"}
+            <div class="latest-section" id="latestSection">
+                <div class="latest-header">
+                    <div class="latest-title">
+                        <span class="latest-title-icon">~</span>
+                        最近更新
+                    </div>
+                    <a href="/latest" class="latest-more">
+                        <i class="iconfont icon-gengduo"></i> 查看更多
+                    </a>
+                </div>
+                <div class="latest-list" id="latestList">
+                    <!-- 数据通过 JS 加载 -->
+                </div>
+            </div>
+            {/if}
+
+            <!-- 第三方热播榜区域 - 仅在有图模式下显示 -->
+            {if condition="$config.ranking_type == 1"}
+            <div class="ranking-section">
+                <!-- Tab 切换 -->
+                <div class="tab-list">
+                    <button class="tab-item active" data-type="电影">电影</button>
+                    <button class="tab-item" data-type="电视剧">电视剧</button>
+                    <button class="tab-item" data-type="动漫">动漫</button>
+                    <button class="tab-item" data-type="综艺">综艺</button>
+                    <button class="tab-item" data-type="短剧">短剧</button>
+                    <div class="tab-refresh" onclick="app.refreshAllRankings()">
+                        <i class="iconfont icon-shuaxin"></i>
+                        刷新
+                    </div>
+                </div>
+                
+                <!-- 三列榜单卡片网格 -->
+                <div class="ranking-grid" id="rankingGrid">
+                    <!-- 热搜榜 -->
+                    <div class="ranking-card" data-rank-type="最热">
+                        <div class="ranking-card-header">
+                            <div class="ranking-card-title-group">
+                                <div class="ranking-card-icon ranking-icon-hot">
+                                    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M756.184615 346.584615l-74.830769 70.892308s0-283.569231-244.184615-378.092308c0 0-23.630769 259.938462-145.723077 354.461539s-370.215385 378.092308 122.092308 590.769231c0 0-244.184615-259.938462 74.830769-448.984616 0 0-23.630769 94.523077 98.461538 189.046154s0 259.938462 0 259.938462 586.830769-141.784615 169.353846-638.03077z"></path></svg>
+                                </div>
+                                <div>
+                                    <span class="ranking-card-name">热搜榜</span>
+                                    <span class="ranking-card-date">{:date('Y-m-d')}</span>
+                                </div>
+                            </div>
+                            <a href="/ranking" class="ranking-card-more">查看更多</a>
+                        </div>
+                        <div class="ranking-list" id="ranking-hot">
+                            <!-- 数据通过 JS 加载 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 新片榜 -->
+                    <div class="ranking-card" data-rank-type="最新">
+                        <div class="ranking-card-header">
+                            <div class="ranking-card-title-group">
+                                <div class="ranking-card-icon ranking-icon-new">
+                                    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M823.995592 0H200.004408c-53.033609 0-95.911846 42.878237-95.911846 95.911846v719.90303h0.564187v208.185124l208.185124-208.185124H823.995592c53.033609 0 95.911846-42.878237 95.911846-95.911846V95.911846c0-53.033609-42.878237-95.911846-95.911846-95.911846z m-122.42865 635.839118H626.530028C538.516804 506.64022 473.635262 411.292562 432.449587 349.231956c-16.361433-27.645179-29.901928-54.161983-41.749862-79.550413h-2.25675c4.513499 26.516804 6.770248 56.418733 6.770248 90.269972v275.323416H322.433058V179.975758h77.293664c86.884848 128.070523 150.073829 222.853994 189.566942 284.350413 16.361433 23.695868 31.030303 50.77686 44.006611 81.807162v-2.256749c-2.820937-29.337741-4.513499-56.418733-4.513498-81.807163v-282.093663h72.780165v455.86336z"></path></svg>
+                                </div>
+                                <div>
+                                    <span class="ranking-card-name">新片榜</span>
+                                    <span class="ranking-card-date">{:date('Y-m-d')}</span>
+                                </div>
+                            </div>
+                            <a href="/ranking" class="ranking-card-more">查看更多</a>
+                        </div>
+                        <div class="ranking-list" id="ranking-new">
+                            <!-- 数据通过 JS 加载 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 好评榜 -->
+                    <div class="ranking-card" data-rank-type="好评">
+                        <div class="ranking-card-header">
+                            <div class="ranking-card-title-group">
+                                <div class="ranking-card-icon ranking-icon-good">
+                                    <svg viewBox="0 0 1042 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M972.8 405.942857c-3.657143-10.971429-10.971429-18.285714-21.942857-23.771428L707.657143 292.571429 546.742857 87.771429c-14.628571-18.285714-43.885714-18.285714-58.514286 0L327.314286 292.571429 84.114286 382.171429c-10.971429 3.657143-18.285714 12.8-21.942857 23.771428-3.657143 10.971429-1.828571 21.942857 3.657142 31.085714l144.457143 217.6 9.142857 261.485715c0 10.971429 5.485714 21.942857 14.628572 27.428571 9.142857 7.314286 20.114286 9.142857 31.085714 5.485714L515.657143 877.714286l250.514286 71.314285c3.657143 1.828571 7.314286 1.828571 9.142857 1.828572 7.314286 0 14.628571-1.828571 21.942857-7.314286 9.142857-7.314286 14.628571-16.457143 14.628571-27.428571l9.142857-261.485715 144.457143-217.6c9.142857-9.142857 10.971429-20.114286 7.314286-31.085714z"></path></svg>
+                                </div>
+                                <div>
+                                    <span class="ranking-card-name">好评榜</span>
+                                    <span class="ranking-card-date">{:date('Y-m-d')}</span>
+                                </div>
+                            </div>
+                            <a href="/ranking" class="ranking-card-more">查看更多</a>
+                        </div>
+                        <div class="ranking-list" id="ranking-good">
+                            <!-- 数据通过 JS 加载 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/if}
+        </div>
+        
+        {notempty name="config.ad_home_bottom"}
+        <div class="ad-box">{$config.ad_home_bottom|raw}</div>
+        {/notempty}
+        {include file="news/common/foot"}
+        
+        <!-- 资源弹窗 -->
+        <el-dialog v-if="dialogUrl" title="转存结果" v-model="dialogUrl" class="resource-dialog" :close-on-click-modal="false" width="420px">
+            <div class="resource-dialog-content" v-if="dialogUrl">
+                <!-- 加载状态 -->
+                <div v-if="dialogLoading" class="loading-content">
+                    <div class="loading-spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <div class="loading-text">资源正在获取中，请稍候...</div>
+                    <div class="loading-subtext">正在连接网盘服务器</div>
+                </div>
+                <!-- 内容状态 -->
+                <div v-else-if="dialogItem.showUrl">
+                    <!-- 磁力链接特殊处理：显示二维码和迅雷下载 -->
+                    <div v-if="dialogItem.showUrl.startsWith('magnet:')" class="magnet-content">
+                        <div class="success-title">获取成功!</div>
+                        <div class="resource-subtitle">{{dialogItem.title}}</div>
+                        <div class="scan-tip">磁力资源下载</div>
+                        <div class="scan-desc">请使用迅雷APP扫码或点击下方按钮下载</div>
+                        <div class="qrcode-wrapper">
+                            <div class="qrcode" id="qrcode"></div>
+                        </div>
+                        <div class="url-box">
+                            <div class="url-label">资源地址：</div>
+                            <div class="url-text">{{dialogItem.showUrl}}</div>
+                        </div>
+                        <div class="expire-tip" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; margin-bottom: 12px; text-align: center; font-weight: 500;">⏰ 资源10分钟失效，请尽快保存！</div>
+                        <div class="tip-text">打开迅雷APP扫码或点击下方按钮下载</div>
+                        <div class="dialog-actions">
+                            <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                            <button @click="downloadWithThunder(dialogItem.showUrl, dialogItem.title)" class="btn-secondary">迅雷下载</button>
+                            <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                        </div>
+                    </div>
+                    <!-- 非磁力链接正常显示 -->
+                    <div v-else class="normal-content">
+                        <div class="success-title">获取成功!</div>
+                        <div class="resource-subtitle">{{dialogItem.title}}</div>
+                        <!-- 手机端只显示链接，不显示二维码 -->
+                        <template v-if="is_m == 1">
+                            <div class="url-box" style="margin-top: 20px;">
+                                <div class="url-label">资源地址：</div>
+                                <div class="url-text">{{dialogItem.showUrl}}</div>
+                            </div>
+                            <div class="expire-tip" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; margin-bottom: 12px; text-align: center; font-weight: 500;">⏰ 资源10分钟失效，请尽快保存！</div>
+                            <div class="dialog-actions">
+                                <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                                <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary">打开链接</a>
+                                <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                            </div>
+                        </template>
+                        <!-- PC端根据pc_type设置显示 -->
+                        <template v-else>
+                            <!-- pc_type=1(仅跳转)：只显示链接 -->
+                            <template v-if="pc_type == 1">
+                                <div class="url-box" style="margin-top: 20px;">
+                                    <div class="url-label">资源地址：</div>
+                                    <div class="url-text">{{dialogItem.showUrl}}</div>
+                                </div>
+                                <div class="expire-tip" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; margin-bottom: 12px; text-align: center; font-weight: 500;">⏰ 资源10分钟失效，请尽快保存！</div>
+                                <div class="dialog-actions">
+                                    <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                                    <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary">打开链接</a>
+                                    <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                                </div>
+                            </template>
+                            <!-- pc_type=2(仅扫码)：只显示二维码 -->
+                            <template v-else-if="pc_type == 2">
+                                <div class="scan-tip" style="margin-top: 10px;">
+                                    请使用 <span class="pan-name">{{panTypeMap[dialogItem.is_type] || '夸克网盘'}}</span> 扫码获取
+                                </div>
+                                <div class="scan-desc">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP - 点击搜索框中的相机 - 点击扫码</div>
+                                <div class="qrcode-wrapper">
+                                    <div class="qrcode" id="qrcode"></div>
+                                </div>
+                                <div class="dialog-actions">
+                                    <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                                </div>
+                            </template>
+                            <!-- pc_type=0或其他：默认显示二维码和链接 -->
+                            <template v-else>
+                                <div class="scan-tip">
+                                    请使用 <span class="pan-name">{{panTypeMap[dialogItem.is_type] || '夸克网盘'}}</span> 扫码获取
+                                </div>
+                                <div class="scan-desc">打开{{panTypeMap[dialogItem.is_type] || '夸克'}}APP - 点击搜索框中的相机 - 点击扫码</div>
+                                <div class="qrcode-wrapper">
+                                    <div class="qrcode" id="qrcode"></div>
+                                </div>
+                                <div class="url-box">
+                                    <div class="url-label">资源地址：</div>
+                                    <div class="url-text">{{dialogItem.showUrl}}</div>
+                                </div>
+                                <div class="expire-tip" style="color: #ff6b6b; font-size: 13px; margin-top: 8px; margin-bottom: 12px; text-align: center; font-weight: 500;">⏰ 资源10分钟失效，请尽快保存！</div>
+                                <div class="dialog-actions">
+                                    <button @click="copyToClipboard(dialogItem.showUrl)" class="btn-primary">复制链接</button>
+                                    <a :href="dialogItem.showUrl" target="_blank" rel="noopener noreferrer" class="btn-secondary">打开链接</a>
+                                    <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+                <!-- 错误状态 -->
+                <div v-else-if="!dialogLoading" class="error-content">
+                    <div class="error-title">获取失败</div>
+                    <div class="error-message">{{dialogItem.message}}</div>
+                    <div class="dialog-actions">
+                        <button @click="dialogUrl = false" class="btn-secondary">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </el-dialog>
+
+        <!-- 群二维码弹窗 -->
+        <el-dialog v-if="qcodeVisible" v-model="qcodeVisible" width="300" title="联系我们" custom-class="qrcode-dialog" :style="{ backgroundColor: '#fff' }">
+            <template #header>
+                <div style="background: #fff; padding: 15px; font-weight: bold; border-bottom: 1px solid #eee;">联系我们</div>
+            </template>
+            <div style="text-align: center; padding: 20px; background: #fff;">
+                {notempty name="config.qcode"}
+                <img src="{$config.qcode}" style="width: 100%; border-radius: 8px; display: block; background: #f5f5f5;"/>
+                {/notempty}
+                <p style="margin-top: 15px; color: #666; font-size: 14px;">{notempty name="config.contact_desc"}{$config.contact_desc}{else/}欢迎联系我们，获取更多资源{/notempty}</p>
+                <div style="margin-top: 12px; text-align: left; color: #333; font-size: 14px; line-height: 2.2;">
+                    {notempty name="config.contact_qq"}
+                    <div>QQ：<a href="tencent://message/?uin={$config.contact_qq}" target="_blank" style="color:#409eff;">{$config.contact_qq}</a></div>
+                    {/notempty}
+                    {notempty name="config.contact_wechat"}
+                    <div>微信：<span>{$config.contact_wechat}</span></div>
+                    {/notempty}
+                    {notempty name="config.contact_qqgroup"}
+                    <div>QQ群：<span>{$config.contact_qqgroup}</span></div>
+                    {/notempty}
+                    {notempty name="config.contact_phone"}
+                    <div>电话：<a href="tel:{$config.contact_phone}" style="color:#409eff;">{$config.contact_phone}</a></div>
+                    {/notempty}
+                </div>
+            </div>
+        </el-dialog>
+
+        <!-- 手机端导航菜单 -->
+        <el-dialog v-if="drawer" v-model="drawer" width="200" center custom-class="nav-drawer" :show-close="false">
+            <div class="nav-drawer-content">
+                <div class="nav-drawer-header">
+                    <span class="nav-drawer-title">{$config.app_name|default='妙搜云'}</span>
+                    <span class="nav-drawer-close iconfont icon-guanbi" @click="drawer = false"></span>
+                </div>
+                <div class="nav-drawer-menu">
+                    {notempty name="config.app_links"}
+                        {$config.app_links|raw}
+                    {else/}
+                        <a href="/" class="nav-drawer-item active">搜索</a>
+                        <a href="/ranking" class="nav-drawer-item">热播榜</a>
+                        <a href="/latest" class="nav-drawer-item">最近更新</a>
+                        <div class="nav-drawer-item" @click="qcodeVisible = true; drawer = false">联系我们</div>
+                    {/notempty}
+                </div>
+            </div>
+        </el-dialog>
+    </div>
+    {include file="news/common/footer"}
+    <script type="text/javascript" charset="utf-8">
+        app.rankList = JSON.parse('<?php echo json_encode($rankList, JSON_UNESCAPED_UNICODE); ?>');
+        
+        // Tab 切换功能 - 新结构
+        app.currentCategory = '电影';
+        app.rankTypes = ['热搜榜', '新片榜', '好评榜'];
+        
+        // 切换分类 Tab
+        app.switchTab = function(category) {
+            app.currentCategory = category;
+            
+            // 更新 Tab 样式
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-type') === category) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // 加载三个榜单的数据
+            app.loadAllRankings(category);
+        };
+        
+        // 加载所有榜单数据
+        app.loadAllRankings = function(category) {
+            app.rankTypes.forEach(rankType => {
+                app.loadRankingList(category, rankType);
+            });
+        };
+        
+        // 加载单个榜单数据
+        app.loadRankingList = function(category, rankType) {
+            const containerId = rankType === '热搜榜' ? 'ranking-hot' : 
+                               rankType === '新片榜' ? 'ranking-new' : 'ranking-good';
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            // 生成缓存key
+            const cacheKey = 'ranking_' + category + '_' + rankType;
+            const cacheTime = 60 * 60 * 1000; // 缓存1小时
+            
+            // 尝试读取本地缓存
+            try {
+                const cachedData = localStorage.getItem(cacheKey);
+                const cachedTimestamp = localStorage.getItem(cacheKey + '_time');
+                if (cachedData && cachedTimestamp) {
+                    const now = Date.now();
+                    if (now - parseInt(cachedTimestamp) < cacheTime) {
+                        // 缓存有效，直接渲染
+                        app.renderRankingList(container, JSON.parse(cachedData), category, rankType);
+                        return;
+                    }
+                }
+            } catch(e) {
+                // localStorage 不可用，继续请求
+            }
+            
+            // 显示加载状态
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;font-size:12px;">加载中...</div>';
+            
+            axios.get('/api/tool/ranking', {
+                params: {
+                    channel: category,
+                    rank_type: rankType
+                }
+            }).then(res => {
+                if (res.data && res.data.data) {
+                    // 保存到本地缓存
+                    try {
+                        localStorage.setItem(cacheKey, JSON.stringify(res.data.data));
+                        localStorage.setItem(cacheKey + '_time', Date.now().toString());
+                    } catch(e) {
+                        // localStorage 不可用，忽略
+                    }
+                    app.renderRankingList(container, res.data.data, category, rankType);
+                } else {
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;font-size:12px;">暂无数据</div>';
+                }
+            }).catch(() => {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;font-size:12px;">加载失败</div>';
+            });
+        };
+        
+        // 图片缓存对象
+        app.imageCache = {};
+        
+        // 预加载图片并缓存
+        app.preloadImage = function(src) {
+            if (!src || app.imageCache[src]) return;
+            const img = new Image();
+            img.src = src;
+            app.imageCache[src] = true;
+        };
+        
+        // 渲染榜单列表 - 显示9个
+        app.renderRankingList = function(container, data, category, rankType) {
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;font-size:12px;">暂无数据</div>';
+                return;
+            }
+            
+            // 预加载所有图片
+            data.slice(0, 9).forEach(item => {
+                if (item.src) {
+                    app.preloadImage(item.src);
+                }
+            });
+            
+            // 判断是否为手机端（与CSS媒体查询保持一致）
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            
+            if (isMobile) {
+                // 手机端：卡片网格形式
+                app.renderRankingGrid(container, data, category, rankType);
+            } else {
+                // 桌面端：列表形式
+                let html = '';
+                data.slice(0, 9).forEach((item, index) => {
+                    const rank = index + 1;
+                    const topClass = rank <= 3 ? 'top' + rank : '';
+                    const cover = item.src || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Crect fill='%23e8e8e8' width='48' height='64'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ccc' font-size='10'%3ENo Img%3C/text%3E%3C/svg%3E";
+                    const scoreLabel = rankType === '热搜榜' ? (item.hot_score || '0') : 
+                                      rankType === '新片榜' ? '新' : (item.score || '0.0');
+                    const year = item.year || new Date().getFullYear();
+                    html += `
+                        <div class="ranking-item" onclick="window.searchByKeyword('${item.title.replace(/'/g, "\\'")}')" style="cursor: pointer;">
+                            <span class="ranking-rank ${topClass}">${rank}</span>
+                            <div class="ranking-cover">
+                                <img src="${cover}" alt="${item.title}" loading="lazy" decoding="async" />
+                            </div>
+                            <div class="ranking-info">
+                                <div class="ranking-item-title">${item.title}</div>
+                                <div class="ranking-meta">
+                                    <span>${year}</span>
+                                    <span>·</span>
+                                    <span>${category}</span>
+                                </div>
+                            </div>
+                            <span class="ranking-score">${scoreLabel}</span>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        };
+        
+        // 手机端：渲染榜单卡片网格 - 每行3个
+        app.renderRankingGrid = function(container, data, category, rankType) {
+            let html = '<div class="ranking-grid-mobile">';
+            data.slice(0, 9).forEach((item, index) => {
+                const rank = index + 1;
+                const topClass = rank <= 3 ? 'top' + rank : '';
+                const cover = item.src || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Crect fill='%23e8e8e8' width='48' height='64'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ccc' font-size='10'%3ENo Img%3C/text%3E%3C/svg%3E";
+                html += `
+                    <div class="ranking-card-mobile" onclick="window.searchByKeyword('${item.title.replace(/'/g, "\\'")}')" style="cursor: pointer;">
+                        <div class="ranking-card-cover">
+                            <span class="ranking-card-rank ${topClass}">TOP${rank}</span>
+                            <img src="${cover}" alt="${item.title}" loading="lazy" decoding="async" />
+                        </div>
+                        <div class="ranking-card-title">${item.title}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        };
+        
+        // 刷新所有榜单
+        app.refreshAllRankings = function() {
+            const btn = document.querySelector('.tab-refresh');
+            if (btn) {
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+            }
+            
+            app.loadAllRankings(app.currentCategory);
+            
+            setTimeout(() => {
+                if (btn) {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }
+            }, 1000);
+        };
+        
+        // 查看更多
+        app.loadRankingData = function(rankType) {
+            // 将内部 rank_type 映射回榜单名称
+            const rankTypeMap = {
+                '最热': '热搜榜',
+                '最新': '新片榜',
+                '好评': '好评榜'
+            };
+            const displayRankType = rankTypeMap[rankType] || rankType;
+        };
+        
+        // 绑定 Tab 点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    app.switchTab(this.getAttribute('data-type'));
+                });
+            });
+            
+            // 初始加载默认分类的数据
+            app.loadAllRankings(app.currentCategory);
+        });
+        
+        // 监听窗口大小变化，切换设备时重新渲染
+        let lastIsMobile = window.matchMedia('(max-width: 768px)').matches;
+        window.addEventListener('resize', function() {
+            const currentIsMobile = window.matchMedia('(max-width: 768px)').matches;
+            if (currentIsMobile !== lastIsMobile) {
+                lastIsMobile = currentIsMobile;
+                // 重新加载当前分类的榜单
+                app.loadAllRankings(app.currentCategory);
+            }
+        });
+    </script>
+</body>
+
+</html>

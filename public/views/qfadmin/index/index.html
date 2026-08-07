@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>系统概况</title>
+    <style>
+        .page-head {
+            margin-bottom: 16px;
+        }
+        .page-head .ptitle {
+            font-size: 18px;
+            font-weight: 700;
+            color: #303133;
+        }
+        .page-head .psub {
+            font-size: 13px;
+            color: #909399;
+            margin-top: 2px;
+        }
+        .stat-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .stat-card {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ebeef5;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+        }
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .stat-info .num {
+            font-size: 24px;
+            font-weight: 700;
+            color: #303133;
+            line-height: 1.2;
+        }
+        .stat-info .label {
+            font-size: 13px;
+            color: #909399;
+        }
+        .dash-grid {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .panel {
+            background: #fff;
+            border: 1px solid #ebeef5;
+            border-radius: 8px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+        }
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 3px solid #409eff;
+            line-height: 1.2;
+        }
+        .w-60 { flex: 0 0 60%; }
+        .w-40 { flex: 1; }
+        .chart-box { height: 300px; }
+        .kw-list { padding: 2px 0; }
+        .kw-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+        .kw-item:last-child { border-bottom: none; }
+        .kw-rank {
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            text-align: center;
+            border-radius: 5px;
+            background: #f4f4f5;
+            color: #909399;
+            font-size: 12px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .kw-item:nth-child(1) .kw-rank { background: #f56c6c; color: #fff; }
+        .kw-item:nth-child(2) .kw-rank { background: #e6a23c; color: #fff; }
+        .kw-item:nth-child(3) .kw-rank { background: #409eff; color: #fff; }
+        .kw-name {
+            flex: 1;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #606266;
+        }
+        .kw-total { color: #c0c4cc; font-size: 12px; }
+        .sys-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px dashed #f0f0f0;
+            font-size: 13px;
+        }
+        .sys-item:last-child { border-bottom: none; }
+        .sys-item .k { color: #909399; }
+        .sys-item .v { color: #303133; font-weight: 500; }
+        .sys-time {
+            margin-top: 10px;
+            text-align: right;
+            font-size: 12px;
+            color: #c0c4cc;
+        }
+        .cate-box { height: 300px; }
+    </style>
+    {include file="common/header"/}
+</head>
+<body>
+    <div class="page-head">
+        <div class="ptitle">系统概况</div>
+        <div class="psub">搜索统计及资源分布情况</div>
+    </div>
+
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#409eff;"><i class="el-icon-search"></i></div>
+            <div class="stat-info">
+                <div class="num">{{ stats.today_search }}</div>
+                <div class="label">今日搜索</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#67c23a;"><i class="el-icon-data-line"></i></div>
+            <div class="stat-info">
+                <div class="num">{{ stats.total_search }}</div>
+                <div class="label">总搜索量</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e6a23c;"><i class="el-icon-files"></i></div>
+            <div class="stat-info">
+                <div class="num">{{ stats.source_total }}</div>
+                <div class="label">资源总数</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f56c6c;"><i class="el-icon-circle-plus"></i></div>
+            <div class="stat-info">
+                <div class="num">{{ stats.source_today }}</div>
+                <div class="label">今日新增资源</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="panel w-60">
+            <div class="panel-title">每日搜索量趋势</div>
+            <div id="trendChart" class="chart-box"></div>
+        </div>
+        <div class="panel w-40">
+            <div class="panel-title">搜索关键词 Top10</div>
+            <div class="kw-list">
+                <div class="kw-item" v-for="(kw, i) in stats.top_keywords" :key="i">
+                    <span class="kw-rank">{{ i + 1 }}</span>
+                    <span class="kw-name" :title="kw.content">{{ kw.content }}</span>
+                    <span class="kw-total">{{ kw.total }}次</span>
+                </div>
+                <el-empty v-if="!stats.top_keywords.length" description="暂无搜索记录" :image-size="60"></el-empty>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="panel w-40">
+            <div class="panel-title">系统信息</div>
+            <div class="sys-item"><span class="k">PHP 版本</span><span class="v">{{ sys.php_version }}</span></div>
+            <div class="sys-item"><span class="k">MySQL 版本</span><span class="v">{{ sys.mysql_version }}</span></div>
+            <div class="sys-item"><span class="k">系统</span><span class="v">{{ sys.os }}</span></div>
+            <div class="sys-item"><span class="k">IP 地址</span><span class="v">{{ sys.ip }}</span></div>
+            <div class="sys-item"><span class="k">磁盘空间</span><span class="v">{{ sys.disk_text }}</span></div>
+            <div class="sys-item"><span class="k">最大上传</span><span class="v">{{ sys.upload_max }}</span></div>
+            <div class="sys-item"><span class="k">内存限制</span><span class="v">{{ sys.memory_limit }}</span></div>
+            <div class="sys-time">{{ sys.server_time }}</div>
+        </div>
+        <div class="panel w-60">
+            <div class="panel-title">资源分类分布</div>
+            <div id="cateChart" class="cate-box"></div>
+        </div>
+    </div>
+    {include file="common/footer"/}
+    <script src="/static/admin/js/echarts.min.js"></script>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    loading: false,
+                    stats: {
+                        today_search: 0,
+                        total_search: 0,
+                        source_total: 0,
+                        source_today: 0,
+                        top_keywords: [],
+                    },
+                    sys: {},
+                }
+            },
+            created() {
+                this.getData();
+            },
+            methods: {
+                getData() {
+                    var that = this;
+                    this.loading = true;
+                    axios.post('/admin/index/getDashboard', Object.assign({}, PostBase))
+                        .then(function (res) {
+                            that.loading = false;
+                            if (res.data.code == 200) {
+                                that.stats = res.data.data;
+                                that.sys = res.data.data.system || {};
+                                that.$nextTick(function () {
+                                    that.renderTrend();
+                                    that.renderCate();
+                                });
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        })
+                        .catch(function () {
+                            that.loading = false;
+                            that.$message.error('数据加载失败');
+                        });
+                },
+                renderTrend() {
+                    var chart = echarts.init(document.getElementById('trendChart'));
+                    chart.setOption({
+                        tooltip: { trigger: 'axis' },
+                        grid: { left: 40, right: 20, top: 30, bottom: 30 },
+                        xAxis: {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: this.stats.trend.map(function (t) { return t.date; }),
+                            axisLabel: { fontSize: 11, color: '#909399' },
+                            axisLine: { lineStyle: { color: '#dcdfe6' } }
+                        },
+                        yAxis: {
+                            type: 'value',
+                            minInterval: 1,
+                            splitLine: { lineStyle: { type: 'dashed', color: '#f0f0f0' } },
+                            axisLabel: { fontSize: 11, color: '#909399' }
+                        },
+                        series: [{
+                            name: '搜索量',
+                            type: 'line',
+                            smooth: true,
+                            symbolSize: 4,
+                            lineStyle: { width: 2, color: '#409eff' },
+                            itemStyle: { color: '#409eff' },
+                            areaStyle: { color: 'rgba(64,158,255,.08)' },
+                            data: this.stats.trend.map(function (t) { return t.count; })
+                        }]
+                    });
+                    window.addEventListener('resize', function () { chart.resize(); });
+                },
+                renderCate() {
+                    var chart = echarts.init(document.getElementById('cateChart'));
+                    var data = this.stats.category_dist || [];
+                    chart.setOption({
+                        tooltip: { trigger: 'item' },
+                        legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 12 } },
+                        series: [{
+                            type: 'pie',
+                            radius: ['35%', '62%'],
+                            center: ['50%', '46%'],
+                            itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                            label: { fontSize: 12 },
+                            data: data.map(function (c) { return { name: c.name, value: c.value }; })
+                        }]
+                    });
+                    window.addEventListener('resize', function () { chart.resize(); });
+                },
+            }
+        });
+    </script>
+</body>
+</html>

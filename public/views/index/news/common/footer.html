@@ -1,0 +1,1872 @@
+<script src="__STATIC__/news/common/static/js/vue.global.min.js"></script>
+<script src="__STATIC__/news/common/static/js/index.full.min.js"></script>
+<script src="__STATIC__/news/common/static/js/axios.min.js"></script>
+<script src="__STATIC__/news/common/static/js/qrcanvas@3.js"></script>
+<script src="//open.thunderurl.com/thunder-link.js"></script>
+<script>
+    const { createApp, ref, onMounted, onUnmounted } = Vue;
+    const { ElButton, ElMessage  } = ElementPlus;
+    const app = createApp({
+        setup() {
+            // 定义响应式数据
+            const elementOpacity = ref(0);
+            const scrollThreshold = ref(150); // 动态设置的滚动阈值
+            const keyword = ref('{$keyword??''}');
+            const qcodeVisible = ref(false);
+            const layerVisible = ref(false);
+            const content = ref('');
+            const load = ref(false)
+            const drawer = ref(false)
+            const rankList = ref([]);
+            const rankDj = ref([]);
+            const is_m = ref(0);
+            const newList = ref([]);
+            const QList = ref([]);
+            const QLoading = ref(false);
+            const total_result = ref(0);
+            const currentSource = ref(0);
+            const dialogUrl = ref(false);
+            const dialogLoading = ref(false);
+            const dialogItem = ref({});
+            const is_type = ref(0);
+            const pc_type = ref(0);
+            const panTypeMap = ref(<?php echo json_encode($panTypeMap ?? [], JSON_UNESCAPED_UNICODE); ?>);
+            
+            // TMDB 影视信息
+            const tmdbData = ref({});
+            const tmdbLoading = ref(false);
+            
+            // 主题切换
+            const currentTheme = ref('red');
+            const showThemeDropdown = ref(false);
+            const themeSwitcherRef = ref(null);
+            
+            // 切换下拉显示
+            const toggleThemeDropdown = () => {
+                showThemeDropdown.value = !showThemeDropdown.value;
+            };
+            
+            // 切换主题
+            const switchTheme = (theme) => {
+                currentTheme.value = theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('app-theme', theme);
+                showThemeDropdown.value = false;
+                showMessage('主题已切换', 'success');
+            };
+            
+            // 初始化主题
+            const initTheme = () => {
+                const savedTheme = localStorage.getItem('app-theme') || 'red';
+                currentTheme.value = savedTheme;
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            };
+            
+            // 点击外部关闭下拉
+            const closeThemeDropdown = (e) => {
+                if (themeSwitcherRef.value && !themeSwitcherRef.value.contains(e.target)) {
+                    showThemeDropdown.value = false;
+                }
+            };
+            
+            // 公共消息方法
+            const showMessage = (message, type = 'info') => {
+                ElMessage({
+                    message,
+                    type,
+                    plain: true,
+                });
+            };
+
+
+             // 滚动监听方法
+            const handleScroll = () => {
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                elementOpacity.value = scrollTop >= scrollThreshold.value
+                    ? Math.min((scrollTop - scrollThreshold.value) / 100, 1)
+                    : Math.max(1 - (scrollThreshold.value - scrollTop) / 100, 0);
+    
+                const boxElement = document.querySelector('.listBox .screen .fixed .box');
+                if (boxElement && boxElement.style.display === 'block' && is_m.value) {
+                    boxElement.style.display = 'none';
+                }
+            };
+
+            // 选中线路缓存键
+            const SELECTED_PAN_TYPE_KEY = 'selected_pan_type';
+
+            // 读取选中的线路类型（提前定义，避免初始化时访问不到）
+            const getSelectedPanType = () => {
+                try {
+                    return localStorage.getItem(SELECTED_PAN_TYPE_KEY);
+                } catch (e) {
+                    return null;
+                }
+            };
+
+            // 获取可用的线路类型（转换为字符串数组）
+            var availablePanTypes = <?php echo json_encode(array_keys($panTypeMap ?? []), JSON_UNESCAPED_UNICODE); ?>.map(String);
+            // 默认选中排序第一的线路
+            var defaultPanType = String(availablePanTypes[0] || '9');
+            // 尝试读取保存的选中状态
+            var savedPanType = getSelectedPanType();
+            // 当前选中的网盘类型，优先使用保存的状态，否则使用默认值
+            var currentPanType = (savedPanType && availablePanTypes.includes(savedPanType)) ? savedPanType : defaultPanType;
+            var searchResults = [];
+            var currentEventSource = null;
+
+            // 搜索结果缓存配置（10分钟）
+            const SEARCH_CACHE_DURATION = 10 * 60 * 1000; // 10分钟
+
+            // 获取搜索结果缓存
+            const getSearchCache = (query, panType) => {
+                try {
+                    const cacheKey = 'search_cache_' + encodeURIComponent(query) + '_' + panType;
+                    const cacheData = localStorage.getItem(cacheKey);
+                    if (cacheData) {
+                        const { data, timestamp, type, checkResults } = JSON.parse(cacheData);
+                        if (Date.now() - timestamp < SEARCH_CACHE_DURATION) {
+                            return { data: data, type: type, checkResults: checkResults || {} };
+                        }
+                    }
+                } catch (e) {
+                }
+                return null;
+            };
+
+            // 保存搜索结果缓存
+            const setSearchCache = (query, panType, data, checkResults) => {
+                try {
+                    const cacheKey = 'search_cache_' + encodeURIComponent(query) + '_' + panType;
+                    const cacheData = {
+                        data: data,
+                        type: panType,
+                        timestamp: Date.now(),
+                        checkResults: checkResults || {}
+                    };
+                    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+                } catch (e) {
+                }
+            };
+            
+            // 更新缓存中的检测结果
+            const updateSearchCacheCheckResults = (query, panType, url, result) => {
+                try {
+                    const cacheKey = 'search_cache_' + encodeURIComponent(query) + '_' + panType;
+                    const cacheData = localStorage.getItem(cacheKey);
+                    if (cacheData) {
+                        const parsed = JSON.parse(cacheData);
+                        if (!parsed.checkResults) {
+                            parsed.checkResults = {};
+                        }
+                        parsed.checkResults[url] = result;
+                        localStorage.setItem(cacheKey, JSON.stringify(parsed));
+                    }
+                } catch (e) {
+                }
+            };
+
+            // 清空搜索结果缓存
+            const clearSearchCache = (query, panType) => {
+                try {
+                    const cacheKey = 'search_cache_' + encodeURIComponent(query) + '_' + panType;
+                    localStorage.removeItem(cacheKey);
+                } catch (e) {
+                }
+            };
+            
+            // 清空所有搜索结果缓存
+            const clearAllSearchCache = () => {
+                try {
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('search_cache_')) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    keysToRemove.forEach(key => localStorage.removeItem(key));
+                    return keysToRemove.length;
+                } catch (e) {
+                    return 0;
+                }
+            };
+            
+            // 暴露清除缓存函数到全局
+            window.clearAllSearchCache = clearAllSearchCache;
+
+            // 保存选中的线路类型
+            const saveSelectedPanType = (panType) => {
+                try {
+                    localStorage.setItem(SELECTED_PAN_TYPE_KEY, panType);
+                } catch (e) {
+                }
+            };
+
+            // 本地搜索结果存储
+            var localSearchResults = [];
+            var hasLocalData = false;
+
+            // 检查本地资源
+            const checkLocalResources = async (query, isType) => {
+                try {
+                    var params = { title: query };
+                    // 如果指定了线路类型且不是本地资源类型，则添加类型过滤
+                    if (isType && isType !== '' && isType !== 'local') {
+                        params.is_type = isType;
+                    }
+                    const response = await axios.get('/api/other/local_search_check', {
+                        params: params,
+                        timeout: 5000
+                    });
+                    if (response.data && response.data.code === 200) {
+                        return {
+                            hasData: response.data.data.hasData,
+                            count: response.data.data.count || 0,
+                            items: response.data.data.items || []
+                        };
+                    }
+                } catch (e) {
+                }
+                return { hasData: false, count: 0, items: [] };
+            };
+
+            // 显示/隐藏本地资源按钮（已废弃，本地资源直接显示在搜索结果中）
+            const toggleLocalSearchButton = (show) => {
+                // 本地资源按钮已移除，此函数保留用于兼容
+            };
+
+            // 页面加载时设置默认选中状态
+            document.addEventListener('DOMContentLoaded', function() {
+                // 设置桌面端标签选中
+                var desktopTabs = document.querySelectorAll('.pan-type-tab');
+                desktopTabs.forEach(function(tab) {
+                    if (tab.getAttribute('data-type') === currentPanType) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                // 设置移动端下拉列表选中
+                var mobileSelect = document.querySelector('.pan-type-select');
+                if (mobileSelect) {
+                    mobileSelect.value = currentPanType;
+                }
+                
+                // 三连击清除缓存功能
+                var clearCacheIcon = document.getElementById('clearCacheIcon');
+                if (clearCacheIcon) {
+                    var clickCount = 0;
+                    var clickTimer = null;
+                    
+                    clearCacheIcon.addEventListener('click', function() {
+                        clickCount++;
+                        
+                        if (clickCount === 1) {
+                            // 第一次点击，启动计时器
+                            clickTimer = setTimeout(function() {
+                                // 超时重置
+                                clickCount = 0;
+                            }, 500); // 500ms 内完成三连击
+                        } else if (clickCount === 3) {
+                            // 三连击成功
+                            clearTimeout(clickTimer);
+                            clickCount = 0;
+                            
+                            // 执行清除缓存
+                            var count = clearAllSearchCache();
+                            
+                            // 显示提示
+                            var toast = document.createElement('div');
+                            toast.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: #fff; padding: 16px 24px; border-radius: 8px; font-size: 14px; z-index: 9999; animation: fadeIn 0.3s ease;';
+                            toast.textContent = '已清除 ' + count + ' 条缓存';
+                            document.body.appendChild(toast);
+                            
+                            setTimeout(function() {
+                                toast.style.opacity = '0';
+                                toast.style.transition = 'opacity 0.3s ease';
+                                setTimeout(function() {
+                                    document.body.removeChild(toast);
+                                }, 300);
+                            }, 1500);
+                        }
+                    });
+                }
+            });
+
+            // 更新搜索统计数据
+            window.updateSearchStats = function() {
+                fetch('/api/other/get_search_stats')
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(res) {
+                        if (res.code === 200 && res.data) {
+                            // 更新今日搜索
+                            var todayEl = document.querySelector('.stat-item:nth-child(1) .stat-value');
+                            if (todayEl) {
+                                todayEl.textContent = res.data.today_formatted;
+                            }
+                            // 更新总搜索量
+                            var totalEl = document.querySelector('.stat-item:nth-child(2) .stat-value');
+                            if (totalEl) {
+                                totalEl.textContent = res.data.total_formatted;
+                            }
+                        }
+                    })
+                    .catch(function(err) {
+                    });
+            };
+
+            // 更新搜索耗时显示
+            window.updateSearchDuration = function() {
+                if (window.searchStartTime) {
+                    var durationMs = Date.now() - window.searchStartTime;
+                    var durationSec = (durationMs / 1000).toFixed(2);
+                    var loadTimeEl = document.getElementById('searchDuration');
+                    if (loadTimeEl) {
+                        loadTimeEl.textContent = durationSec + 's';
+                    }
+                }
+            };
+
+            // 切换网盘类型
+            window.switchPanType = function(el) {
+                // 停止当前检测
+                if (window.stopLinkChecking) {
+                    window.stopLinkChecking();
+                }
+                
+                currentPanType = el.getAttribute('data-type') || '';
+                
+                // 保存选中的线路类型
+                saveSelectedPanType(currentPanType);
+                
+                // 同步更新所有区域的按钮状态（根据data-type）
+                document.querySelectorAll('.pan-type-tab').forEach(function(tab) {
+                    tab.classList.remove('active');
+                    if (tab.getAttribute('data-type') === currentPanType) {
+                        tab.classList.add('active');
+                    }
+                });
+
+                // 只要输入了关键词就重新搜索（不查询TMDB）
+                if (keyword.value) {
+                    searchOnly();
+                }
+            };
+
+            // 移动端按钮组切换线路
+            window.switchPanTypeMobile = function(btn) {
+                // 停止当前检测
+                if (window.stopLinkChecking) {
+                    window.stopLinkChecking();
+                }
+                
+                // 获取点击的按钮类型值
+                currentPanType = btn.getAttribute('data-type') || '';
+
+                // 保存选中的线路类型
+                saveSelectedPanType(currentPanType);
+
+                // 同步更新所有移动端按钮状态（根据data-type）
+                document.querySelectorAll('.pan-type-mobile-btn').forEach(function(item) {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-type') === currentPanType) {
+                        item.classList.add('active');
+                    }
+                });
+
+                // 只要输入了关键词就重新搜索（不查询TMDB）
+                if (keyword.value) {
+                    searchOnly();
+                }
+            };
+
+            // 从缓存加载搜索结果
+            const loadSearchResultsFromCache = (cacheData) => {
+                var section = document.getElementById('searchResultSection');
+                var content = document.getElementById('searchResultContent');
+                var countEl = document.getElementById('searchResultCount');
+
+                section.classList.add('show');
+                // 合并本地资源和缓存结果（本地资源在前）
+                var webResults = cacheData.data || [];
+                searchResults = hasLocalData ? [...localSearchResults, ...webResults] : webResults;
+                var localCount = hasLocalData ? localSearchResults.length : 0;
+                var localText = localCount > 0 ? '（含' + localCount + '条本地）' : '';
+                countEl.textContent = '共 ' + searchResults.length + ' 条结果' + localText;
+                
+                // 检查是否有缓存的检测结果
+                var hasCachedResults = cacheData.checkResults && Object.keys(cacheData.checkResults).length > 0;
+                
+                // 渲染搜索结果，如果有缓存的检测结果一并应用
+                renderSearchResults(searchResults, cacheData.checkResults);
+                
+                // 启动链接检测（会跳过已缓存的检测结果，继续检测未完成的链接）
+                setTimeout(function() {
+                    batchCheckLinksForSearchResults();
+                }, 500);
+            };
+
+            // 仅搜索不查询TMDB（用于切换线路）
+            const searchOnly = async () => {
+                if (!keyword.value) {
+                    return showMessage('请输入你要搜索的内容~', 'error');
+                }
+                
+                // 停止当前检测
+                if (window.stopLinkChecking) {
+                    window.stopLinkChecking();
+                }
+
+                // 重置搜索数据缓存
+                window.currentSearchData = [];
+
+                // 切换线路时，重置本地资源状态并重新查询
+                hasLocalData = false;
+                localSearchResults = [];
+                toggleLocalSearchButton(false);
+                
+                // 检查本地资源（根据当前线路类型过滤）
+                var localResult = await checkLocalResources(keyword.value, currentPanType);
+                if (localResult.hasData && localResult.items.length > 0) {
+                    hasLocalData = true;
+                    localSearchResults = localResult.items;
+                    toggleLocalSearchButton(true);
+                }
+
+                // 检查缓存
+                var cache = getSearchCache(keyword.value, currentPanType);
+                if (cache && cache.data && cache.data.length > 0) {
+                    loadSearchResultsFromCache(cache);
+                    return;
+                }
+
+                if (currentEventSource) {
+                    try {
+                        currentEventSource.close();
+                    } catch (e) {}
+                    currentEventSource = null;
+                }
+
+                var section = document.getElementById('searchResultSection');
+                var content = document.getElementById('searchResultContent');
+                var countEl = document.getElementById('searchResultCount');
+
+                section.classList.add('show');
+                content.innerHTML = '<div class="search-result-loading"><div class="loading-wrapper"><div class="loading-pulse"></div><div class="loading-pulse"></div><div class="loading-pulse"></div><i class="iconfont icon-jiazai"></i></div><div class="loading-text">正在全网搜索</div></div>';
+                countEl.textContent = '';
+
+                // 记录搜索开始时间
+                window.searchStartTime = Date.now();
+
+                var isTypeParam = currentPanType !== '' ? '&is_type=' + currentPanType : '';
+                var searchUrl = '/api/other/web_search?title=' + encodeURIComponent(keyword.value) + isTypeParam;
+                
+                try {
+                    currentEventSource = new EventSource(searchUrl);
+                    // 初始化搜索结果数组，如果有本地资源则先加入
+                    searchResults = hasLocalData ? [...localSearchResults] : [];
+                    var maxResults = 20;
+                    var isClosed = false;
+                    var localCount = searchResults.length;
+                    
+                    // 如果有本地资源，先渲染本地资源
+                    if (hasLocalData && localCount > 0) {
+                        content.innerHTML = '<div class="search-result-list"></div>';
+                        localSearchResults.forEach(function(item, index) {
+                            appendSearchResult(item, index);
+                        });
+                        countEl.textContent = '已找到 ' + localCount + ' 条本地资源，正在全网搜索...';
+                    }
+
+                    currentEventSource.onopen = function() {
+                    };
+
+                    currentEventSource.onmessage = function(event) {
+                        if (isClosed) return;
+
+                        // 处理 [DONE] 或 [DONE] 开头的消息
+                        if (event.data === '[DONE]' || event.data.startsWith('[DONE]')) {
+                            isClosed = true;
+                            try {
+                                currentEventSource.close();
+                            } catch (e) {}
+                            currentEventSource = null;
+                            var totalCount = searchResults.length;
+                            if (totalCount > 0) {
+                                var localText = localCount > 0 ? '（含' + localCount + '条本地）' : '';
+                                countEl.textContent = '共 ' + totalCount + ' 条结果' + localText;
+                                // 保存搜索结果到缓存（仅保存全网搜结果，不包含本地资源）
+                                if (searchResults.length > localCount) {
+                                    var webResults = searchResults.slice(localCount);
+                                    setSearchCache(keyword.value, currentPanType, webResults);
+                                }
+                                // 搜索结束后检测链接有效性
+                                setTimeout(function() {
+                                    batchCheckLinksForSearchResults();
+                                }, 500);
+                            } else {
+                                content.innerHTML = '<div class="search-result-empty"><i class="iconfont icon-kong"></i> 暂无搜索结果，请尝试其他关键词</div>';
+                            }
+                            // 搜索完成后更新耗时
+                            updateSearchDuration();
+                            return;
+                        }
+
+                        try {
+                            var data = JSON.parse(event.data);
+                            if (data && data.title) {
+                                var currentIndex = searchResults.length;
+                                searchResults.push(data);
+                                if (currentIndex < maxResults + localCount) {
+                                    // 使用增量渲染，实现逐步显示效果
+                                    if (currentIndex === 0 || (localCount === 0 && currentIndex === 0)) {
+                                        // 第一条数据：清空loading并渲染
+                                        content.innerHTML = '<div class="search-result-list"></div>';
+                                    }
+                                    appendSearchResult(data, currentIndex);
+                                    var webCount = currentIndex + 1 - localCount;
+                                    var localText = localCount > 0 ? '本地' + localCount + '条 + ' : '';
+                                    countEl.textContent = '已找到 ' + localText + '全网' + webCount + ' 条';
+                                }
+                            }
+                        } catch (e) {
+                            // 静默忽略非JSON数据
+                        }
+                    };
+
+                    currentEventSource.onerror = function(error) {
+                        if (!isClosed) {
+                            isClosed = true;
+                            try {
+                                currentEventSource.close();
+                            } catch (e) {}
+                            currentEventSource = null;
+                            var totalCount = searchResults.length;
+                            if (totalCount > 0) {
+                                var localText = localCount > 0 ? '（含' + localCount + '条本地）' : '';
+                                countEl.textContent = '共 ' + totalCount + ' 条结果' + localText;
+                                // 如果出错时还没渲染过（只有本地资源的情况），需要重新渲染
+                                if (localCount > 0 && totalCount === localCount) {
+                                    renderSearchResults(searchResults);
+                                }
+                            } else {
+                                content.innerHTML = '<div class="search-result-empty"><i class="iconfont icon-kong"></i> 搜索出错，请稍后重试</div>';
+                            }
+                            // 搜索出错后也更新耗时
+                            updateSearchDuration();
+                        }
+                    };
+                } catch (error) {
+                    content.innerHTML = '<div class="search-result-empty"><i class="iconfont icon-kong"></i> 搜索初始化失败，请刷新页面重试</div>';
+                }
+            };
+            
+            // 获取 TMDB 缓存数据
+            const getTmdbCache = (query) => {
+                try {
+                    const cacheKey = 'tmdb_cache_' + query;
+                    const cacheData = localStorage.getItem(cacheKey);
+                    if (cacheData) {
+                        const { data, timestamp } = JSON.parse(cacheData);
+                        // 24小时缓存
+                        const CACHE_DURATION = 24 * 60 * 60 * 1000;
+                        if (Date.now() - timestamp < CACHE_DURATION) {
+                            return data;
+                        }
+                    }
+                } catch (e) {
+                }
+                return null;
+            };
+
+            // 保存 TMDB 缓存数据
+            const setTmdbCache = (query, data) => {
+                try {
+                    const cacheKey = 'tmdb_cache_' + query;
+                    const cacheData = {
+                        data: data,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+                    // 记录最后一次查询的关键词
+                    localStorage.setItem('tmdb_last_query', query);
+                } catch (e) {
+                }
+            };
+
+            // 获取最后一次缓存的 TMDB 数据（不检查过期时间）
+            const getLastTmdbCache = () => {
+                try {
+                    const lastQuery = localStorage.getItem('tmdb_last_query');
+                    if (lastQuery) {
+                        const cacheKey = 'tmdb_cache_' + lastQuery;
+                        const cacheData = localStorage.getItem(cacheKey);
+                        if (cacheData) {
+                            const { data } = JSON.parse(cacheData);
+                            return data;
+                        }
+                    }
+                } catch (e) {
+                }
+                return null;
+            };
+
+            // 获取 TMDB 影视信息
+            const fetchTmdbInfo = async (query) => {
+                if (!query) return;
+
+                // 先检查缓存
+                const cachedData = getTmdbCache(query);
+                if (cachedData) {
+                    tmdbData.value = cachedData;
+                    return;
+                }
+
+                tmdbLoading.value = true;
+                try {
+                    const response = await axios.get('https://dm.xueximeng.com/app/api/tmdb/multi_search', {
+                        params: {
+                            query: query,
+                            page: 1
+                        }
+                    });
+
+                    let resultData = {};
+                    if (response.data && response.data.results && response.data.results.length > 0) {
+                        // 查找与关键字同名的结果，如果没有则取第一条
+                        const results = response.data.results;
+                        let matchedResult = results.find(item =>
+                            item.title === query || item.original_title === query || item.name === query || item.original_name === query
+                        );
+
+                        if (!matchedResult) {
+                            matchedResult = results[0];
+                        }
+
+                        resultData = {
+                            title: matchedResult.title || matchedResult.name,
+                            original_title: matchedResult.original_title || matchedResult.original_name,
+                            overview: matchedResult.overview,
+                            release_date: matchedResult.release_date || matchedResult.first_air_date,
+                            poster_url: matchedResult.poster_path
+                                ? 'https://image.tmdb.org/t/p/w300' + matchedResult.poster_path
+                                : ''
+                        };
+                    }
+
+                    tmdbData.value = resultData;
+                    // 保存到缓存
+                    setTmdbCache(query, resultData);
+                } catch (error) {
+                    tmdbData.value = {};
+                } finally {
+                    tmdbLoading.value = false;
+                }
+            };
+
+            // 搜索按钮点击事件 - SSE全网搜
+            const searchBtn = async () => {
+                if (!keyword.value) {
+                    return showMessage('请输入你要搜索的内容~', 'error');
+                }
+
+                // 记录搜索开始时间
+                window.searchStartTime = Date.now();
+
+                // 重置搜索数据缓存
+                window.currentSearchData = [];
+
+                // 重置本地数据状态
+                hasLocalData = false;
+                localSearchResults = [];
+                toggleLocalSearchButton(false);
+
+                // 先检查本地资源
+                var localResult = await checkLocalResources(keyword.value, currentPanType);
+
+                // 检查本地资源，有则显示本地资源按钮并保存数据
+                if (localResult.hasData && localResult.items.length > 0) {
+                    hasLocalData = true;
+                    localSearchResults = localResult.items;
+                    toggleLocalSearchButton(true);
+                } else {
+                    hasLocalData = false;
+                    localSearchResults = [];
+                    toggleLocalSearchButton(false);
+                }
+                
+                // 保持用户已选中的线路，只有未选择时才重置为默认
+                if (currentPanType === '') {
+                    currentPanType = defaultPanType;
+                    
+                    // 更新按钮选中状态为第一个按钮
+                    document.querySelectorAll('.pan-type-tab').forEach(function(tab) {
+                        tab.classList.remove('active');
+                        if (tab.getAttribute('data-type') === currentPanType) {
+                            tab.classList.add('active');
+                        }
+                    });
+                    document.querySelectorAll('.pan-type-btn').forEach(function(btn) {
+                        btn.classList.remove('active');
+                        if (btn.getAttribute('data-type') === currentPanType) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }
+
+                // 检查缓存
+                var cache = getSearchCache(keyword.value, currentPanType);
+                if (cache && cache.data && cache.data.length > 0) {
+                    loadSearchResultsFromCache(cache);
+                    // 即使使用缓存，也异步查询TMDB信息
+                    fetchTmdbInfo(keyword.value);
+                    return;
+                }
+
+                // 查询 TMDB 信息
+                fetchTmdbInfo(keyword.value);
+
+                if (currentEventSource) {
+                    try {
+                        currentEventSource.close();
+                    } catch (e) {}
+                    currentEventSource = null;
+                }
+
+                var section = document.getElementById('searchResultSection');
+                var content = document.getElementById('searchResultContent');
+                var countEl = document.getElementById('searchResultCount');
+
+                section.classList.add('show');
+                content.innerHTML = '<div class="search-result-loading"><div class="loading-wrapper"><div class="loading-pulse"></div><div class="loading-pulse"></div><div class="loading-pulse"></div><i class="iconfont icon-jiazai"></i></div><div class="loading-text">正在全网搜索</div></div>';
+                countEl.textContent = '';
+
+                var isTypeParam = currentPanType !== '' ? '&is_type=' + currentPanType : '';
+                var searchUrl = '/api/other/web_search?title=' + encodeURIComponent(keyword.value) + isTypeParam;
+
+                try {
+                    currentEventSource = new EventSource(searchUrl);
+                    // 初始化搜索结果数组，如果有本地资源则先加入
+                    searchResults = hasLocalData ? [...localSearchResults] : [];
+                    var maxResults = 20;
+                    var isClosed = false;
+                    var localCount = searchResults.length;
+
+                    // 如果有本地资源，先渲染本地资源
+                    if (hasLocalData && localCount > 0) {
+                        content.innerHTML = '<div class="search-result-list"></div>';
+                        localSearchResults.forEach(function(item, index) {
+                            appendSearchResult(item, index);
+                        });
+                        countEl.textContent = '已找到 ' + localCount + ' 条本地资源，正在全网搜索...';
+                    }
+
+                    currentEventSource.onopen = function() {
+                    };
+
+                    currentEventSource.onmessage = function(event) {
+                        if (isClosed) return;
+
+                        // 处理 [DONE] 或 [DONE] 开头的消息
+                        if (event.data === '[DONE]' || event.data.startsWith('[DONE]')) {
+                            isClosed = true;
+                            try {
+                                currentEventSource.close();
+                            } catch (e) {}
+                            currentEventSource = null;
+                            var totalCount = searchResults.length;
+                            if (totalCount > 0) {
+                                var localText = localCount > 0 ? '（含' + localCount + '条本地）' : '';
+                                countEl.textContent = '共 ' + totalCount + ' 条结果' + localText;
+                                // 保存搜索结果到缓存（仅保存全网搜结果，不包含本地资源）
+                                if (searchResults.length > localCount) {
+                                    var webResults = searchResults.slice(localCount);
+                                    setSearchCache(keyword.value, currentPanType, webResults);
+                                }
+                                // 搜索结束后检测链接有效性
+                                setTimeout(function() {
+                                    batchCheckLinksForSearchResults();
+                                }, 500);
+                            } else {
+                                content.innerHTML = '<div class="search-result-empty">未找到相关资源</div>';
+                            }
+                            // 搜索完成后更新统计数据和耗时
+                            updateSearchStats();
+                            updateSearchDuration();
+                            return;
+                        }
+
+                        try {
+                            var data = JSON.parse(event.data);
+                            if (data && data.title) {
+                                var currentIndex = searchResults.length;
+                                searchResults.push(data);
+                                if (currentIndex < maxResults + localCount) {
+                                    // 使用增量渲染，实现逐步显示效果
+                                    if (currentIndex === 0 || (localCount === 0 && currentIndex === 0)) {
+                                        // 第一条数据：清空loading并渲染
+                                        content.innerHTML = '<div class="search-result-list"></div>';
+                                    }
+                                    appendSearchResult(data, currentIndex);
+                                    var webCount = currentIndex + 1 - localCount;
+                                    var localText = localCount > 0 ? '本地' + localCount + '条 + ' : '';
+                                    countEl.textContent = '已找到 ' + localText + '全网' + webCount + ' 条';
+                                }
+                            }
+                        } catch (e) {
+                            // 静默忽略非JSON数据（如"线路：xxx"），不输出错误
+                        }
+                    };
+
+                    currentEventSource.onerror = function(error) {
+                        if (isClosed) return;
+                        isClosed = true;
+                        
+                        try {
+                            currentEventSource.close();
+                        } catch (e) {}
+                        currentEventSource = null;
+                        
+                        var totalCount = searchResults.length;
+                        if (totalCount > 0) {
+                            var localText = localCount > 0 ? '（含' + localCount + '条本地）' : '';
+                            countEl.textContent = '共 ' + totalCount + ' 条结果' + localText;
+                            // 如果出错时还没渲染过（只有本地资源的情况），需要重新渲染
+                            if (localCount > 0 && totalCount === localCount) {
+                                renderSearchResults(searchResults);
+                            }
+                        } else {
+                            content.innerHTML = '<div class="search-result-empty">未找到相关资源</div>';
+                        }
+                        // 搜索出错后也更新统计数据和耗时
+                        updateSearchStats();
+                        updateSearchDuration();
+                    };
+                } catch (e) {
+                    content.innerHTML = '<div class="search-result-empty">搜索初始化失败，请重试</div>';
+                }
+            };
+            
+            // 渲染单条搜索结果项
+            window.renderSearchResultItem = function(item, index) {
+                var panTypeMap = {0: '夸克网盘', 1: '阿里云盘', 2: '百度网盘', 3: 'UC网盘', 4: '迅雷云盘', 5: '123云盘', 6: '115网盘', 7: '天翼云盘', 8: '移动云盘', 9: '磁力链接', 10: '光鸭网盘'};
+                var title = item.title || item.note || '未知资源';
+                var desc = item.desc || item.description || '';
+                // 将 is_type 转换为数字来匹配 panTypeMap 的键
+                var isTypeNum = parseInt(item.is_type, 10);
+                var typeLabel = panTypeMap[isTypeNum] || item.pantype || '网盘资源';
+                var rawTime = item.datetime || item.time || item.date || item.create_time || item.created_at || '';
+                var timeStr = '';
+                if (rawTime) {
+                    timeStr = rawTime.substring(0, 19).replace('T', ' ');
+                    if (timeStr.indexOf('0000-') === 0 || timeStr.indexOf('0001-') === 0) {
+                        var now = new Date();
+                        timeStr = now.getFullYear() + '-' + 
+                                 String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                                 String(now.getDate()).padStart(2, '0') + ' ' +
+                                 String(now.getHours()).padStart(2, '0') + ':' +
+                                 String(now.getMinutes()).padStart(2, '0') + ':' +
+                                 String(now.getSeconds()).padStart(2, '0');
+                    }
+                }
+                if (!timeStr && item.source) {
+                    timeStr = item.source;
+                }
+                
+                // 判断是否本地资源
+                var isLocalResource = item.source === '本地资源';
+                var localTag = isLocalResource ? '<span class="search-result-tag local" style="background: linear-gradient(135deg, #ff6b6b, #ff8e8e); color: #fff;">本地资源</span>' : '';
+                
+                // 链接有效性检测状态标识
+                var checkStatusHtml = '<span class="search-result-tag link-check-status" data-url="' + (item.url || '') + '" data-index="' + index + '" style="background: #f5f5f5; color: #666; font-size: 11px; padding: 2px 8px;">';
+                checkStatusHtml += '<span class="check-icon" style="display: inline-block; width: 10px; height: 10px; margin-right: 4px; border: 2px solid #999; border-top-color: transparent; border-radius: 50%; animation: linkCheckRotate 1s linear infinite;"></span>';
+                checkStatusHtml += '<span class="check-text">检测中</span>';
+                checkStatusHtml += '</span>';
+                
+                var html = '<div class="search-result-item" data-index="' + index + '" onclick="getResource(event, ' + index + ')" style="animation: fadeIn 0.3s ease;">';
+                html += '<div class="search-result-info">';
+                html += '<div class="search-result-name">' + title + '</div>';
+                if (desc) {
+                    html += '<div class="search-result-desc">' + desc + '</div>';
+                }
+                html += '<div class="search-result-meta">';
+                html += '<span class="search-result-tag type"><i class="iconfont icon-yunpan" style="font-size:12px;"></i>' + typeLabel + '</span>';
+                html += localTag;
+                html += checkStatusHtml;
+                if (timeStr) {
+                    html += '<span class="search-result-tag source">' + timeStr + '</span>';
+                }
+                html += '</div></div>';
+                html += '<div class="search-result-actions">';
+                html += '<span class="search-result-btn files" onclick="event.stopPropagation(); toggleFileList(' + index + ')"><i class="iconfont icon-file"></i> 查看文件</span>';
+                html += '<span class="search-result-btn get"><i class="iconfont icon-xiazai"></i> 获取资源</span>';
+                html += '</div>';
+                html += '<div class="search-result-files" id="search-files-' + index + '" onclick="event.stopPropagation()" style="display:none;"></div>';
+                html += '</div>';
+                return html;
+            };
+
+            // 查看/收起资源文件列表
+            window.toggleFileList = function(index) {
+                var item = (window.currentSearchData || [])[index];
+                var box = document.getElementById('search-files-' + index);
+                var btn = box ? document.querySelector('.search-result-item[data-index="' + index + '"] .search-result-btn.files') : null;
+                var meta = box ? document.querySelector('.search-result-item[data-index="' + index + '"] .search-result-meta') : null;
+                if (!item || !box) return;
+                if (box.style.display !== 'none') {
+                    box.style.display = 'none';
+                    if (btn) btn.innerHTML = '<i class="iconfont icon-file"></i> 查看文件';
+                    return;
+                }
+                var showText = function() {
+                    if (btn) btn.innerHTML = '<i class="iconfont icon-file"></i> 收起文件';
+                };
+                var countItems = function(nodes) {
+                    var n = 0;
+                    (nodes || []).forEach(function (x) { n += 1 + countItems(x.children); });
+                    return n;
+                };
+                var renderTree = function(nodes, level) {
+                    var h = '';
+                    (nodes || []).forEach(function (n, idx) {
+                        if (n.is_dir) {
+                            var cnt = countItems(n.children);
+                            var fid = 'fdir-' + index + '-' + idx + '-' + Math.random().toString(36).substr(2, 5);
+                            h += '<div class="sf-dir" data-uid="' + fid + '" style="display:flex;align-items:center;padding:7px 12px;font-size:13px;font-weight:600;color:#303133;background:#f8f9fb;border-bottom:1px solid #f0f0f0;cursor:pointer;user-select:none;">';
+                            h += '<span class="sf-dir-icon" style="margin-right:4px;">▼ </span>📁 ' + n.name + (cnt ? '<span style="color:#999;font-weight:400;margin-left:6px;">（' + cnt + '）</span>' : '') + '</div>';
+                            h += '<div class="sf-dir-box" data-uid="' + fid + '">' + renderTree(n.children, level + 1) + '</div>';
+                        } else {
+                            h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px 6px ' + (24 + (level - 1) * 18) + 'px;font-size:13px;color:#606266;border-bottom:1px dashed #f5f5f5;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 ' + n.name + '</span><span style="color:#999;flex-shrink:0;margin-left:10px;">' + n.size_text + '</span></div>';
+                        }
+                    });
+                    return h;
+                };
+                if (!box.dataset.loaded) {
+                    box.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:13px;">文件加载中...</div>';
+                    // 事件委托：点击文件夹行展开/收起（比行内onclick更稳）
+                    box.onclick = function(e) {
+                        var t = e.target;
+                        while (t && t !== box) {
+                            if (t.classList && t.classList.contains('sf-dir')) {
+                                var uid = t.getAttribute('data-uid');
+                                var c = box.querySelector('.sf-dir-box[data-uid="' + uid + '"]');
+                                var icon = t.querySelector('.sf-dir-icon');
+                                if (c) {
+                                    var show = c.style.display === 'none';
+                                    c.style.display = show ? 'block' : 'none';
+                                    if (icon) icon.textContent = show ? '▼ ' : '▶ ';
+                                }
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return;
+                            }
+                            t = t.parentNode;
+                        }
+                    };
+                    axios.post('/api/other/file_list', { url: item.url, stoken: item.stoken || '', code: item.code || '' })
+                        .then(function (res) {
+                            if (res.data.code == 200) {
+                                var d = res.data.data;
+                                var h = '<div style="padding:8px 12px;font-size:12px;color:#666;background:#fafafa;border-bottom:1px solid #f0f0f0;">共 ' + d.total + ' 个文件，' + (d.total_size_text || '') + '</div>';
+                                h += renderTree(d.files, 1);
+                                if (!d.files || !d.files.length) {
+                                    h = '<div style="padding:12px;text-align:center;color:#999;font-size:13px;">暂无文件</div>';
+                                }
+                                box.innerHTML = h;
+                                box.dataset.loaded = '1';
+                                if (meta && !meta.querySelector('.files-summary')) {
+                                    meta.insertAdjacentHTML('beforeend', '<span class="search-result-tag files-summary" style="background:#e8f5e9;color:#2e7d32;">共' + d.total + '个文件，' + (d.total_size_text || '') + '</span>');
+                                }
+                            } else {
+                                box.innerHTML = '<div style="padding:12px;text-align:center;color:#ff4d4f;font-size:13px;">' + (res.data.message || '加载失败') + '</div>';
+                            }
+                            box.style.display = 'block';
+                            showText();
+                        })
+                        .catch(function () {
+                            box.innerHTML = '<div style="padding:12px;text-align:center;color:#ff4d4f;font-size:13px;">加载失败，请稍后重试</div>';
+                            box.style.display = 'block';
+                            showText();
+                        });
+                } else {
+                    box.style.display = 'block';
+                    showText();
+                }
+            };
+            
+            // 添加淡入动画样式
+            if (!document.getElementById('searchResultAnimations')) {
+                var style = document.createElement('style');
+                style.id = 'searchResultAnimations';
+                style.textContent = '@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }';
+                document.head.appendChild(style);
+            }
+            
+            // 添加链接检测动画样式
+            if (!document.getElementById('linkCheckAnimations')) {
+                var linkCheckStyle = document.createElement('style');
+                linkCheckStyle.id = 'linkCheckAnimations';
+                linkCheckStyle.textContent = `
+                    @keyframes linkCheckRotate {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+                    .link-check-status {
+                        transition: all 0.3s ease;
+                    }
+                    .link-check-status.valid {
+                        background: #f6ffed !important;
+                        color: #52c41a !important;
+                        border: 1px solid #b7eb8f;
+                    }
+                    .link-check-status.valid .check-icon {
+                        animation: none !important;
+                        border: none !important;
+                        width: auto !important;
+                        height: auto !important;
+                    }
+                    .link-check-status.valid .check-text::before {
+                        content: '✓ ';
+                    }
+                    .link-check-status.invalid {
+                        background: #fff2f0 !important;
+                        color: #ff4d4f !important;
+                        border: 1px solid #ffccc7;
+                    }
+                    .link-check-status.invalid .check-icon {
+                        animation: none !important;
+                        border: none !important;
+                        width: auto !important;
+                        height: auto !important;
+                    }
+                    .link-check-status.invalid .check-text::before {
+                        content: '✗ ';
+                    }
+                    .link-check-status.error {
+                        background: #fffbe6 !important;
+                        color: #faad14 !important;
+                        border: 1px solid #ffe58f;
+                    }
+                    .link-check-status.error .check-icon {
+                        animation: none !important;
+                        border: none !important;
+                        width: auto !important;
+                        height: auto !important;
+                    }
+                    .link-check-status.error .check-text::before {
+                        content: '! ';
+                    }
+                `;
+                document.head.appendChild(linkCheckStyle);
+            }
+            
+            // 渲染搜索结果 - SSE全网搜数据
+            window.renderSearchResults = function(data, cachedCheckResults) {
+                var content = document.getElementById('searchResultContent');
+                var html = '<div class="search-result-list">';
+                
+                data.forEach(function(item, index) {
+                    html += window.renderSearchResultItem(item, index);
+                });
+                
+                html += '</div>';
+                content.innerHTML = html;
+                window.currentSearchData = data;
+                
+                // 如果有缓存的检测结果，立即应用
+                if (cachedCheckResults && Object.keys(cachedCheckResults).length > 0) {
+                    setTimeout(function() {
+                        applyCachedCheckResults(cachedCheckResults);
+                    }, 100);
+                }
+            };
+            
+            // 增量渲染单条结果（用于逐步显示）
+            window.appendSearchResult = function(item, index) {
+                var content = document.getElementById('searchResultContent');
+                var list = content.querySelector('.search-result-list');
+                
+                // 如果没有列表容器，创建一个
+                if (!list) {
+                    content.innerHTML = '<div class="search-result-list"></div>';
+                    list = content.querySelector('.search-result-list');
+                }
+                
+                // 追加新项
+                list.insertAdjacentHTML('beforeend', window.renderSearchResultItem(item, index));
+                
+                // 更新数据缓存
+                if (!window.currentSearchData) {
+                    window.currentSearchData = [];
+                }
+                window.currentSearchData.push(item);
+            };
+            
+            // ==================== 链接有效性检测功能 ====================
+            
+            // 检测状态标志
+            window.isCheckingLinks = false;
+            window.shouldStopChecking = false;
+            
+            // 停止当前检测
+            window.stopLinkChecking = function() {
+                if (window.isCheckingLinks) {
+                    window.shouldStopChecking = true;
+                }
+            };
+            
+            // 应用缓存的检测结果到UI
+            function applyCachedCheckResults(cachedResults) {
+                var content = document.getElementById('searchResultContent');
+                if (!content) return;
+                
+                var statusElements = content.querySelectorAll('.link-check-status');
+                statusElements.forEach(function(el) {
+                    var url = el.getAttribute('data-url');
+                    if (url && cachedResults[url]) {
+                        updateLinkStatus(el, cachedResults[url]);
+                    }
+                });
+            }
+            
+            // 逐条检测搜索结果的链接
+            window.batchCheckLinksForSearchResults = async function() {
+                // 如果正在检测，先停止之前的
+                if (window.isCheckingLinks) {
+                    window.stopLinkChecking();
+                    // 等待一小段时间让之前的检测停止
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                // 重置停止标志
+                window.shouldStopChecking = false;
+                
+                var content = document.getElementById('searchResultContent');
+                if (!content) return;
+                
+                var statusElements = content.querySelectorAll('.link-check-status');
+                if (statusElements.length === 0) return;
+                
+                // 收集所有链接和对应的元素（跳过已检测完成的链接）
+                var checkItems = [];
+                
+                statusElements.forEach(function(el) {
+                    var url = el.getAttribute('data-url');
+                    // 检查是否已经检测完成（通过检查状态类名 valid 或 invalid）
+                    var isChecked = el.classList.contains('valid') ||
+                                   el.classList.contains('invalid') ||
+                                   el.classList.contains('error');
+
+                    if (url && !isChecked) {
+                        checkItems.push({
+                            url: url,
+                            element: el
+                        });
+                    }
+                });
+                
+                if (checkItems.length === 0) return;
+                
+                // 设置检测标志
+                window.isCheckingLinks = true;
+
+                try {
+                    // 逐条检测
+                    for (var i = 0; i < checkItems.length; i++) {
+                        // 检查是否需要停止
+                        if (window.shouldStopChecking) {
+                            break;
+                        }
+
+                        // 检查是否还在当前页面（防止页面已切换）
+                        var currentContent = document.getElementById('searchResultContent');
+                        if (!currentContent) {
+                            break;
+                        }
+
+                        var item = checkItems[i];
+
+                        // 检测单条链接
+                        await checkSingleLink(item.url, item.element);
+
+                        // 添加小延迟，避免请求过快
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                } finally {
+                    // 无论成功失败，都重置标志
+                    window.isCheckingLinks = false;
+                    window.shouldStopChecking = false;
+                }
+            };
+            
+            // 解密链接
+            async function decryptUrl(encryptedUrl) {
+                try {
+                    var response = await axios.post('/api/other/save_url', {
+                        url: encodeURIComponent(encryptedUrl),
+                        title: ''
+                    });
+                    if (response.data.code == 200 && response.data.data && response.data.data.url) {
+                        return response.data.data.url;
+                    }
+                    return null;
+                } catch (error) {
+                    return null;
+                }
+            }
+            
+            // 判断链接是否需要解密
+            function needsDecryption(url) {
+                if (!url) return false;
+                if (url.startsWith('http') || url.startsWith('magnet:')) return false;
+                return true;
+            }
+            
+            // 检测单条链接
+            async function checkSingleLink(url, element) {
+                try {
+                    var checkUrl = url;
+                    
+                    // 检查链接是否需要解密
+                    if (needsDecryption(url)) {
+                        var decryptedUrl = await decryptUrl(url);
+                        if (decryptedUrl) {
+                            checkUrl = decryptedUrl;
+                        } else {
+                            updateLinkStatus(element, { valid: null, error: '链接解密失败' });
+                            return;
+                        }
+                    } else {
+                    }
+
+                    var response = await fetch('/panchek/api.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ links: [checkUrl] })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('API 请求失败: ' + response.status);
+                    }
+
+                    var data = await response.json();
+
+                    if (data.success && data.results && data.results.length > 0) {
+                        var result = data.results[0];
+                        updateLinkStatus(element, result);
+                        
+                        // 更新缓存中的检测结果
+                        if (keyword.value && currentPanType) {
+                            updateSearchCacheCheckResults(keyword.value, currentPanType, url, { valid: result.valid });
+                        }
+                    } else {
+                        updateLinkStatus(element, { valid: null, error: '返回数据错误' });
+                        // 更新缓存中的检测结果
+                        if (keyword.value && currentPanType) {
+                            updateSearchCacheCheckResults(keyword.value, currentPanType, url, { valid: null, error: '返回数据错误' });
+                        }
+                    }
+                } catch (error) {
+                    updateLinkStatus(element, { valid: null, error: '检测失败' });
+                    // 更新缓存中的检测结果
+                    if (keyword.value && currentPanType) {
+                        updateSearchCacheCheckResults(keyword.value, currentPanType, url, { valid: null, error: '检测失败' });
+                    }
+                }
+            }
+            
+            // 更新链接状态显示
+            function updateLinkStatus(element, result) {
+                if (!element) {
+                    return;
+                }
+
+                var textEl = element.querySelector('.check-text');
+                if (!textEl) {
+                    return;
+                }
+                
+                // 清除所有状态类名
+                element.classList.remove('valid', 'invalid', 'error');
+                
+                if (result.valid === true) {
+                    element.classList.add('valid');
+                    textEl.textContent = '有效';
+                } else if (result.valid === false) {
+                    element.classList.add('invalid');
+                    textEl.textContent = '失效';
+                    // 隐藏整条搜索记录
+                    var searchItem = element.closest('.search-result-item');
+                    if (searchItem) {
+                        searchItem.style.display = 'none';
+                        // 更新搜索结果数量
+                        updateSearchResultCount();
+                    }
+                } else {
+                    element.classList.add('error');
+                    textEl.textContent = '检测失败';
+                }
+            }
+            
+            // 更新搜索结果数量显示
+            function updateSearchResultCount() {
+                var countEl = document.getElementById('searchResultCount');
+                if (!countEl) return;
+                
+                var content = document.getElementById('searchResultContent');
+                if (!content) return;
+                
+                // 获取所有搜索结果项
+                var allItems = content.querySelectorAll('.search-result-item');
+                var visibleItems = content.querySelectorAll('.search-result-item:not([style*="display: none"])');
+                
+                var totalCount = allItems.length;
+                var visibleCount = visibleItems.length;
+                var hiddenCount = totalCount - visibleCount;
+                
+                // 计算本地资源数量
+                var localCount = 0;
+                visibleItems.forEach(function(item) {
+                    if (item.classList.contains('local-result')) {
+                        localCount++;
+                    }
+                });
+                
+                var localText = localCount > 0 ? '（含' + localCount + '条本地）' : '';
+                countEl.textContent = '共 ' + visibleCount + ' 条结果' + localText;
+            }
+            
+            // 获取资源 - 弹窗显示二维码
+            const getResource = function(event, index) {
+                if (event && event.stopPropagation) {
+                    event.stopPropagation();
+                }
+                var item = window.currentSearchData[index];
+                if (!item) return;
+                
+                // 增加浏览量（如果是本地资源且有id）
+                if (item.id) {
+                    axios.post('/api/search/incrementViews', {
+                        id: item.id
+                    }).catch(function(err) {
+                        // 静默处理错误，不影响用户体验
+                        console.log('浏览量增加失败:', err);
+                    });
+                }
+                
+                dialogLoading.value = true;
+                dialogUrl.value = true;
+                dialogItem.value = {};
+                
+                var rawUrl = item.url || '';
+                
+                if (rawUrl.startsWith('http') || rawUrl.startsWith('magnet:')) {
+                    item.showUrl = rawUrl;
+                    showResourceDialog(item);
+                } else {
+                    axios.post('/api/other/save_url', {
+                        url: encodeURIComponent(rawUrl),
+                        title: item.title
+                    }).then(function(res) {
+                        if (res.data.code == 200) {
+                            item.url = res.data.data.url;
+                            item.showUrl = res.data.data.url;
+                        } else {
+                            item.showUrl = '';
+                            item.message = res.data.message || '获取失败';
+                        }
+                        showResourceDialog(item);
+                    }).catch(function(err) {
+                        item.showUrl = '';
+                        item.message = '网络错误，请重试';
+                        showResourceDialog(item);
+                    });
+                }
+            };
+            
+            // 绑定到window，供全局调用
+            window.getResource = getResource;
+
+            // 全局搜索方法 - 供首页热播榜点击使用
+            window.searchByKeyword = function(kw) {
+                // 设置关键词
+                keyword.value = kw;
+                // 先滚动到导览栏位置
+                var topNav = document.querySelector('.top-nav');
+                if (topNav) {
+                    topNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo(0, 0);
+                }
+                // 使用 setTimeout 确保滚动完成后再搜索
+                setTimeout(function() {
+                    searchBtn();
+                }, 300);
+            };
+
+            // 使用迅雷JS-SDK下载磁力链接
+            window.downloadWithThunder = function(url, title) {
+                if (typeof thunderLink === 'undefined') {
+                    showMessage('迅雷SDK加载失败，请刷新页面重试', 'error');
+                    return;
+                }
+                
+                try {
+                    thunderLink.newTask({
+                        taskGroupName: title || '磁力下载',
+                        tasks: [{
+                            url: url,
+                            name: title || '未知文件'
+                        }]
+                    });
+                } catch (error) {
+                    showMessage('迅雷下载调用失败，请确保已安装迅雷客户端', 'error');
+                }
+            };
+            
+            // 显示资源弹窗和二维码
+            const showResourceDialog = function(item) {
+                dialogLoading.value = false;
+                
+                if (item.showUrl && item.showUrl.startsWith('magnet:')) {
+                    item.thunderUrl = 'thunder://' + btoa('AA' + item.showUrl + 'ZZ');
+                }
+                
+                dialogItem.value = item;
+                
+                if (item.showUrl) {
+                    // 使用 nextTick 确保 DOM 更新后再生成二维码
+                    Vue.nextTick(function() {
+                        setTimeout(function() {
+                            var qrcodeEl = document.getElementById('qrcode');
+                            if (qrcodeEl) {
+                                qrcodeEl.innerHTML = '';
+                                var canvas = qrcanvas.qrcanvas({
+                                    data: item.showUrl,
+                                    size: 120
+                                });
+                                qrcodeEl.appendChild(canvas);
+                            }
+                        }, 100);
+                    });
+                }
+            };
+            
+            // 显示详情
+            const showDetail = function(index) {
+                var item = window.currentSearchData[index];
+                if (!item) return;
+                showMessage(item.title || '暂无详情', 'info');
+            };
+            
+            // 关闭搜索结果
+            window.closeSearchResult = function() {
+                document.getElementById('searchResultSection').classList.remove('show');
+            };
+
+            // 加载热门搜索资源
+            window.loadHotSources = async function() {
+                var hotList = document.getElementById('hotList');
+                if (!hotList) return;
+
+                hotList.innerHTML = '<div class="latest-item-empty">加载中...</div>';
+
+                try {
+                    const response = await axios.get('/api/other/get_hot_sources');
+                    if (response.data.code === 200 && response.data.data.items.length > 0) {
+                        var items = response.data.data.items;
+                        // 存储数据供点击使用
+                        window.hotSourcesData = items;
+                        var html = '';
+                        items.forEach(function(item, index) {
+                            var indexClass = index < 3 ? 'latest-item-index top3' : 'latest-item-index';
+                            html += '<div class="latest-item" onclick="showHotResource(' + index + ')">';
+                            html += '<div class="' + indexClass + '">' + (index + 1) + '</div>';
+                            html += '<div class="latest-item-info">';
+                            html += '<div class="latest-item-title">' + item.title + '</div>';
+                            html += '<div class="latest-item-meta">';
+                            html += '<span class="latest-item-tag">' + item.pantype + '</span>';
+                            if (item.page_views > 0) {
+                                html += '<span>🔥 ' + item.page_views + '</span>';
+                            } else {
+                                html += '<span>' + item.datetime.substring(0, 10) + '</span>';
+                            }
+                            html += '</div></div></div>';
+                        });
+                        hotList.innerHTML = html;
+                    } else {
+                        hotList.innerHTML = '<div class="latest-item-empty">暂无热门资源</div>';
+                    }
+                } catch (error) {
+                    hotList.innerHTML = '<div class="latest-item-empty">加载失败，请稍后重试</div>';
+                }
+            };
+
+            // 显示热门搜索资源的弹窗
+            window.showHotResource = function(index) {
+                var item = window.hotSourcesData[index];
+                if (!item) return;
+
+                // 增加浏览量（如果有id）
+                if (item.id) {
+                    axios.post('/api/search/incrementViews', {
+                        id: item.id
+                    }).catch(function(err) {
+                        console.log('浏览量增加失败:', err);
+                    });
+                }
+
+                dialogLoading.value = true;
+                dialogUrl.value = true;
+                dialogItem.value = {};
+
+                var rawUrl = item.url || '';
+
+                if (rawUrl.startsWith('http') || rawUrl.startsWith('magnet:')) {
+                    item.showUrl = rawUrl;
+                    showResourceDialog(item);
+                } else {
+                    axios.post('/api/other/save_url', {
+                        url: encodeURIComponent(rawUrl),
+                        title: item.title
+                    }).then(function(res) {
+                        if (res.data.code == 200) {
+                            item.url = res.data.data.url;
+                            item.showUrl = res.data.data.url;
+                        } else {
+                            item.showUrl = '';
+                            item.message = res.data.message || '获取失败';
+                        }
+                        showResourceDialog(item);
+                    }).catch(function(err) {
+                        item.showUrl = '';
+                        item.message = '网络错误，请重试';
+                        showResourceDialog(item);
+                    });
+                }
+            };
+
+            // 加载最近更新的本地资源
+            window.loadLatestSources = async function() {
+                var latestList = document.getElementById('latestList');
+                if (!latestList) return;
+
+                latestList.innerHTML = '<div class="latest-item-empty">加载中...</div>';
+
+                try {
+                    const response = await axios.get('/api/other/get_latest_sources');
+                    if (response.data.code === 200 && response.data.data.items.length > 0) {
+                        var items = response.data.data.items;
+                        // 存储数据供点击使用
+                        window.latestSourcesData = items;
+                        var html = '';
+                        items.forEach(function(item, index) {
+                            var indexClass = index < 3 ? 'latest-item-index top3' : 'latest-item-index';
+                            html += '<div class="latest-item" onclick="showLatestResource(' + index + ')">';
+                            html += '<div class="' + indexClass + '">' + (index + 1) + '</div>';
+                            html += '<div class="latest-item-info">';
+                            html += '<div class="latest-item-title">' + item.title + '</div>';
+                            html += '<div class="latest-item-meta">';
+                            html += '<span class="latest-item-tag">' + item.pantype + '</span>';
+                            html += '<span>' + item.datetime.substring(0, 10) + '</span>';
+                            html += '</div></div></div>';
+                        });
+                        latestList.innerHTML = html;
+                    } else {
+                        latestList.innerHTML = '<div class="latest-item-empty">暂无最新资源</div>';
+                    }
+                } catch (error) {
+                    latestList.innerHTML = '<div class="latest-item-empty">加载失败，请稍后重试</div>';
+                }
+            };
+
+            // 显示最近更新资源的弹窗
+            window.showLatestResource = function(index) {
+                var item = window.latestSourcesData[index];
+                if (!item) return;
+
+                // 增加浏览量（如果有id）
+                if (item.id) {
+                    axios.post('/api/search/incrementViews', {
+                        id: item.id
+                    }).catch(function(err) {
+                        console.log('浏览量增加失败:', err);
+                    });
+                }
+
+                dialogLoading.value = true;
+                dialogUrl.value = true;
+                dialogItem.value = {};
+
+                var rawUrl = item.url || '';
+
+                if (rawUrl.startsWith('http') || rawUrl.startsWith('magnet:')) {
+                    item.showUrl = rawUrl;
+                    showResourceDialog(item);
+                } else {
+                    axios.post('/api/other/save_url', {
+                        url: encodeURIComponent(rawUrl),
+                        title: item.title
+                    }).then(function(res) {
+                        if (res.data.code == 200) {
+                            item.url = res.data.data.url;
+                            item.showUrl = res.data.data.url;
+                        } else {
+                            item.showUrl = '';
+                            item.message = res.data.message || '获取失败';
+                        }
+                        showResourceDialog(item);
+                    }).catch(function(err) {
+                        item.showUrl = '';
+                        item.message = '网络错误，请重试';
+                        showResourceDialog(item);
+                    });
+                }
+            };
+
+            // 页面加载完成后获取热门搜索和最近更新
+            setTimeout(function() {
+                loadHotSources();
+                loadLatestSources();
+            }, 100);
+
+            // 保存按钮点击事件
+            const saveBtn = async () => {
+                if (!content.value) {
+                    return showMessage('请输入你想看的资源信息~', 'error');
+                }
+                if (load.value) return;
+    
+                load.value = true;
+                try {
+                    const response = await axios.post('/api/tool/feedback', { content: content.value });
+                    showMessage(response.data.message, response.data.code === 200 ? 'success' : 'error');
+                    if (response.data.code === 200) {
+                        layerVisible.value = false;
+                        content.value = '';
+                    }
+                } finally {
+                    load.value = false;
+                }
+            };
+            
+            const setnum = (num) => (num / 10000).toFixed(2) + 'W';
+            
+            const goLink = (event,id) => {
+                event.preventDefault();
+                window.location.href = `/d/${id}.html`;
+            }
+            
+            const changeBtn = (e) => {
+                const category_id = `{$category_id}`;
+                if(category_id){
+                    window.location.href = `/s/${keyword.value}-${e}-${category_id}.html`;
+                }else{
+                    window.location.href = `/s/${keyword.value}-${e}.html`;
+                }
+            };
+            
+            const copyText = async(event,title,url,code) => {
+                event.preventDefault();
+                var text = '标题：'+title+'\n链接：'+url
+                if (code) text += `\n提取码：${code}`;
+                text += `\n由【${'{$config.app_name}'}${window.location.hostname}】提供网盘分享链接`;
+                
+                
+                try {
+                    // 优先使用 navigator.clipboard
+                    await navigator.clipboard.writeText(text);
+                    showMessage('复制成功', 'success');
+                } catch (err) {
+                    // 如果 navigator.clipboard 失败，使用 document.execCommand 作为回退
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';  // 避免滚动
+                    textArea.style.opacity = 0;
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+            
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (successful) {
+                            showMessage('复制成功', 'success');
+                        } else {
+                            throw new Error('复制失败');
+                        }
+                    } catch (err) {
+                        showMessage('复制失败，请手动复制', 'error');
+                    }
+            
+                    document.body.removeChild(textArea);
+                }
+            }
+
+            // 复制链接到剪贴板（弹窗使用）
+            const copyToClipboard = async(text) => {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showMessage('复制成功', 'success');
+                } catch (err) {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = 0;
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+            
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (successful) {
+                            showMessage('复制成功', 'success');
+                        } else {
+                            throw new Error('复制失败');
+                        }
+                    } catch (err) {
+                        showMessage('复制失败，请手动复制', 'error');
+                    }
+            
+                    document.body.removeChild(textArea);
+                }
+            }
+            
+            const selectBtn = () => {
+                if(!is_m.value) return;
+                const boxElement = document.querySelector('.listBox .screen .fixed .box');
+                // 切换 display 属性，显示或隐藏
+                if (boxElement.style.display === 'none' || boxElement.style.display === '') {
+                    boxElement.style.display = 'block'; // 显示
+                } else {
+                    boxElement.style.display = ''; // 隐藏
+                }
+            }
+            
+            const handleDeviceType = () => {
+                const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                if (isMobile) {
+                    // 手机端的逻辑
+                    is_m.value = 1
+                    pc_type.value = 1
+                } else {
+                    // 电脑端的逻辑
+                    is_m.value = 0
+                    pc_type.value = parseInt('{$config.pc_type}') || 0;
+                }
+            };
+
+
+            // 组件挂载时添加滚动监听
+            onMounted(() => {
+                handleDeviceType();
+                initTheme(); // 初始化主题
+
+                // 从URL参数读取搜索关键词并自动搜索
+                const urlParams = new URLSearchParams(window.location.search);
+                const wd = urlParams.get('wd');
+                if (wd) {
+                    keyword.value = decodeURIComponent(wd);
+                    // 延迟执行搜索，确保页面完全加载
+                    setTimeout(() => {
+                        searchBtn();
+                    }, 100);
+                } else {
+                    // 如果没有URL参数，显示最后一次缓存的TMDB数据
+                    const lastQuery = localStorage.getItem('tmdb_last_query');
+                    if (lastQuery) {
+                        const cacheKey = 'tmdb_cache_' + lastQuery;
+                        const cacheData = localStorage.getItem(cacheKey);
+                        if (cacheData) {
+                            try {
+                                const parsed = JSON.parse(cacheData);
+                                const data = parsed.data || parsed;
+                                if (data && data.title) {
+                                    tmdbData.value = data;
+                                }
+                            } catch (e) {
+                            }
+                        }
+                    }
+                }
+
+                window.addEventListener('scroll', handleScroll);
+                window.addEventListener('resize', handleDeviceType);
+                document.addEventListener('click', closeThemeDropdown);
+            });
+
+            // 组件卸载时移除滚动监听
+            onUnmounted(() => {
+                window.removeEventListener('scroll', handleScroll);
+                window.removeEventListener('resize', handleDeviceType);
+                document.removeEventListener('click', closeThemeDropdown);
+            });
+
+            // 返回数据和方法
+            return { elementOpacity, scrollThreshold, keyword, searchBtn, searchOnly, rankList,newList, setnum, qcodeVisible, layerVisible, content, saveBtn, rankDj,goLink,changeBtn,copyText,copyToClipboard,drawer,selectBtn,is_m,QList,QLoading,total_result,currentSource,dialogUrl,dialogLoading,dialogItem,is_type,pc_type,panTypeMap,getResource,showResourceDialog,showDetail, tmdbData, tmdbLoading, downloadWithThunder, currentTheme, showThemeDropdown, switchTheme, themeSwitcherRef, toggleThemeDropdown };
+        }
+    })
+    .use(ElementPlus)
+    .mount('#app');
+    document.documentElement.removeAttribute('data-page-loading');
+
+    // 动态设置导航 active 状态（兼容后台自定义链接，纯原生 JS，所有页面通用）
+    (function() {
+        function setNavActive() {
+            var currentPath = window.location.pathname;
+            // 顶部导航
+            document.querySelectorAll('.top-nav-menu a').forEach(function(link) {
+                var href = link.getAttribute('href') || '';
+                if (href === currentPath || (href !== '/' && currentPath.indexOf(href) === 0)) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            // 手机端抽屉导航
+            document.querySelectorAll('.nav-drawer-menu a').forEach(function(link) {
+                var href = link.getAttribute('href') || '';
+                if (href === currentPath || (href !== '/' && currentPath.indexOf(href) === 0)) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setNavActive);
+        } else {
+            setNavActive();
+        }
+    })();
+
+    // 全局显示联系我们弹窗（供后台自定义导航调用）
+    function showQcode() {
+        // 尝试通过 Vue 实例打开弹窗
+        var appEl = document.querySelector('#app');
+        if (appEl && appEl.__vue_app__) {
+            var vm = appEl.__vue_app__._instance;
+            if (vm && vm.setupState && typeof vm.setupState.qcodeVisible !== 'undefined') {
+                vm.setupState.qcodeVisible = true;
+                return;
+            }
+            if (vm && vm.ctx && typeof vm.ctx.qcodeVisible !== 'undefined') {
+                vm.ctx.qcodeVisible = true;
+                return;
+            }
+        }
+        // 降级：直接查找 el-dialog 并强制显示
+        var overlays = document.querySelectorAll('.el-overlay');
+        for (var i = 0; i < overlays.length; i++) {
+            var dialog = overlays[i].querySelector('.qrcode-dialog, .el-dialog');
+            if (dialog || overlays[i].innerHTML.includes('联系我们')) {
+                overlays[i].style.display = 'block';
+                return;
+            }
+        }
+    }
+</script>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网盘链接加密解密工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            padding: 15px 40px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tab:first-child {
+            border-radius: 8px 0 0 0;
+        }
+        
+        .tab:last-child {
+            border-radius: 0 8px 0 0;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 0 8px 8px 8px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .result-content {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #28a745;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #28a745;
+        }
+        
+        .log {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .log-entry {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            border-left: 3px solid #17a2b8;
+        }
+        
+        .log-entry.info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .log-entry.success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .log-entry.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 网盘链接加密解密工具</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('encrypt')">加密</button>
+            <button class="tab" onclick="switchTab('decrypt')">解密</button>
+        </div>
+        
+        <div class="info">
+            <strong>使用说明：</strong>
+            <br>• 加密：输入网盘链接，点击加密按钮生成加密字符串（已进行 URL 编码）
+            <br>• 解密：输入加密字符串（支持 URL 编码或未编码格式），点击解密按钮查看原始内容
+            <br>• 支持：夸克网盘、百度网盘、阿里云盘等所有网盘链接
+            <br>• 注意：加密结果已进行 URL 编码，可直接用于 API 传输
+            <br>• 日志：下方显示详细的调用流程、请求参数、响应结果等信息
+        </div>
+        
+        <div id="encryptPanel" class="panel active">
+            <div class="form-group">
+                <label for="encryptInput">输入要加密的网盘链接：</label>
+                <textarea id="encryptInput" placeholder="例如：https://pan.baidu.com/s/1xxxxx?pwd=xxxx 或 https://pan.quark.cn/s/xxxxxx"></textarea>
+            </div>
+            <button id="encryptBtn" onclick="encrypt()">
+                <span id="encryptBtnText">加密</span>
+            </button>
+            <div id="encryptResult" class="result" style="display: none;">
+                <h3>加密结果：</h3>
+                <div class="result-content" id="encryptOutput"></div>
+                <button class="copy-btn" onclick="copyToClipboard('encryptOutput')">复制结果</button>
+            </div>
+        </div>
+        
+        <div id="decryptPanel" class="panel">
+            <div class="form-group">
+                <label for="decryptInput">输入要解密的字符串：</label>
+                <textarea id="decryptInput" placeholder="粘贴加密后的字符串"></textarea>
+            </div>
+            <button id="decryptBtn" onclick="decrypt()">
+                <span id="decryptBtnText">解密</span>
+            </button>
+            <div id="decryptResult" class="result" style="display: none;">
+                <h3>解密结果：</h3>
+                <div class="result-content" id="decryptOutput"></div>
+                <button class="copy-btn" onclick="copyToClipboard('decryptOutput')">复制结果</button>
+            </div>
+        </div>
+        
+        <div class="log" id="logContainer">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0; color: #333;">📋 操作日志</h3>
+                <button onclick="clearLog()" style="padding: 5px 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">清空日志</button>
+            </div>
+            <div class="log-entry info">日志已就绪，等待操作...</div>
+        </div>
+    </div>
+    
+    <script>
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLog() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '<div class="log-entry info">日志已清空，等待操作...</div>';
+        }
+        
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            const panels = document.querySelectorAll('.panel');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            
+            if (tab === 'encrypt') {
+                tabs[0].classList.add('active');
+                document.getElementById('encryptPanel').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('decryptPanel').classList.add('active');
+            }
+        }
+        
+        async function encrypt() {
+            const input = document.getElementById('encryptInput').value.trim();
+            const btn = document.getElementById('encryptBtn');
+            const btnText = document.getElementById('encryptBtnText');
+            const resultDiv = document.getElementById('encryptResult');
+            const output = document.getElementById('encryptOutput');
+            
+            if (!input) {
+                alert('请输入要加密的数据');
+                return;
+            }
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span>加密中...';
+            resultDiv.style.display = 'none';
+            
+            addLog('========== 开始加密流程 ==========', 'info');
+            addLog(`输入数据: ${input}`, 'info');
+            addLog('准备调用 /api/test/encrypt 接口', 'info');
+            
+            try {
+                addLog('发送加密请求...', 'info');
+                
+                const response = await fetch('/api/test/encrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'data=' + encodeURIComponent(input)
+                });
+                
+                addLog(`收到响应，状态码: ${response.status}`, 'info');
+                
+                const result = await response.json();
+                addLog(`响应数据: ${JSON.stringify(result)}`, 'info');
+                
+                if (result.code === 200) {
+                    addLog('加密成功！', 'success');
+                    addLog(`加密结果 (原始): ${result.data}`, 'success');
+                    addLog(`加密结果 (URL编码): ${encodeURIComponent(result.data)}`, 'success');
+                    output.textContent = encodeURIComponent(result.data);
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result success';
+                } else {
+                    addLog(`加密失败: ${result.message}`, 'error');
+                    output.textContent = result.message || '加密失败';
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                addLog(`请求异常: ${error.message}`, 'error');
+                addLog(`异常堆栈: ${error.stack}`, 'error');
+                output.textContent = '请求失败：' + error.message;
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '加密';
+                addLog('========== 加密流程结束 ==========', 'info');
+            }
+        }
+        
+        async function decrypt() {
+            const input = document.getElementById('decryptInput').value.trim();
+            const btn = document.getElementById('decryptBtn');
+            const btnText = document.getElementById('decryptBtnText');
+            const resultDiv = document.getElementById('decryptResult');
+            const output = document.getElementById('decryptOutput');
+            
+            if (!input) {
+                alert('请输入要解密的数据');
+                return;
+            }
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span>解密中...';
+            resultDiv.style.display = 'none';
+            
+            addLog('========== 开始解密流程 ==========', 'info');
+            addLog(`输入数据: ${input}`, 'info');
+            addLog('准备调用 /api/test/decrypt 接口', 'info');
+            
+            try {
+                addLog('发送解密请求...', 'info');
+                
+                const response = await fetch('/api/test/decrypt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'data=' + encodeURIComponent(decodeURIComponent(input))
+                });
+                
+                addLog(`收到响应，状态码: ${response.status}`, 'info');
+                
+                const result = await response.json();
+                addLog(`响应数据: ${JSON.stringify(result)}`, 'info');
+                
+                if (result.code === 200) {
+                    addLog('解密成功！', 'success');
+                    addLog(`解密结果: ${result.data}`, 'success');
+                    output.textContent = result.data;
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result success';
+                } else {
+                    addLog(`解密失败: ${result.message}`, 'error');
+                    output.textContent = result.message || '解密失败';
+                    resultDiv.style.display = 'block';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                addLog(`请求异常: ${error.message}`, 'error');
+                addLog(`异常堆栈: ${error.stack}`, 'error');
+                output.textContent = '请求失败：' + error.message;
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '解密';
+                addLog('========== 解密流程结束 ==========', 'info');
+            }
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('复制成功！');
+            }).catch(err => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('复制成功！');
+            });
+        }
+    </script>
+</body>
+</html>
