@@ -197,7 +197,7 @@
             <div class="sys-time">{{ sys.server_time }}</div>
         </div>
         <div class="panel w-60">
-            <div class="panel-title">资源分类分布</div>
+            <div class="panel-title">网盘类型分布</div>
             <div id="cateChart" class="cate-box"></div>
         </div>
     </div>
@@ -217,10 +217,20 @@
                         top_keywords: [],
                     },
                     sys: {},
+                    trendChart: null,
+                    cateChart: null,
+                    timer: null,
                 }
             },
             created() {
                 this.getData();
+                this.timer = setInterval(this.getData, 60000);
+            },
+            destroyed() {
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
             },
             methods: {
                 getData() {
@@ -246,7 +256,12 @@
                         });
                 },
                 renderTrend() {
-                    var chart = echarts.init(document.getElementById('trendChart'));
+                    var chart = this.trendChart;
+                    if (!chart) {
+                        chart = echarts.init(document.getElementById('trendChart'));
+                        this.trendChart = chart;
+                        window.addEventListener('resize', function () { chart.resize(); });
+                    }
                     chart.setOption({
                         tooltip: { trigger: 'axis' },
                         grid: { left: 40, right: 20, top: 30, bottom: 30 },
@@ -274,11 +289,15 @@
                             data: this.stats.trend.map(function (t) { return t.count; })
                         }]
                     });
-                    window.addEventListener('resize', function () { chart.resize(); });
                 },
                 renderCate() {
-                    var chart = echarts.init(document.getElementById('cateChart'));
-                    var data = this.stats.category_dist || [];
+                    var chart = this.cateChart;
+                    if (!chart) {
+                        chart = echarts.init(document.getElementById('cateChart'));
+                        this.cateChart = chart;
+                        window.addEventListener('resize', function () { chart.resize(); });
+                    }
+                    var data = this.stats.pan_type_dist || this.stats.category_dist || [];
                     chart.setOption({
                         tooltip: { trigger: 'item' },
                         legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 12 } },
@@ -291,7 +310,6 @@
                             data: data.map(function (c) { return { name: c.name, value: c.value }; })
                         }]
                     });
-                    window.addEventListener('resize', function () { chart.resize(); });
                 },
             }
         });

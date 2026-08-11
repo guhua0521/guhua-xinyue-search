@@ -74,6 +74,20 @@ class Index extends QfShop
             ->group('s.source_category_id')
             ->select()->toArray();
 
+        // 网盘类型分布（资源自带网盘类型，随资源变化）
+        $panTypeMap = [0 => '夸克网盘', 1 => '阿里云盘', 2 => '百度网盘', 3 => 'UC网盘', 4 => '迅雷云盘', 5 => '123云盘', 6 => '115网盘', 7 => '天翼云盘', 8 => '移动云盘', 9 => '磁力链接', 10 => '光鸭网盘'];
+        $panTypeDist = Db::name('source')
+            ->field('is_type, COUNT(*) as value')
+            ->where('status', 1)
+            ->where('is_delete', 0)
+            ->group('is_type')
+            ->select()->toArray();
+        foreach ($panTypeDist as &$p) {
+            $p['name'] = $panTypeMap[intval($p['is_type'])] ?? ('网盘类型' . $p['is_type']);
+            unset($p['is_type']);
+        }
+        unset($p);
+
         // 系统信息
         $mysqlVersion = '';
         try {
@@ -93,6 +107,7 @@ class Index extends QfShop
             'trend' => $trend,
             'top_keywords' => $topKeywords,
             'category_dist' => $categoryDist,
+            'pan_type_dist' => $panTypeDist,
             'system' => [
                 'php_version' => PHP_VERSION,
                 'mysql_version' => $mysqlVersion,
