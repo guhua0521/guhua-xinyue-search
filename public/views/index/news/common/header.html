@@ -137,4 +137,76 @@
         }
         {$config.home_css}
     </style>
+    <script>
+        window.SITE_POPUP_AD = {:json_encode([
+            'enable'  => isset($config['ad_popup_enable']) && $config['ad_popup_enable'] == '1' ? 1 : 0,
+            'title'   => isset($config['ad_popup_title']) ? $config['ad_popup_title'] : '',
+            'image'   => isset($config['ad_popup_image']) ? $config['ad_popup_image'] : '',
+            'content' => isset($config['ad_popup_content']) ? $config['ad_popup_content'] : '',
+            'link'    => isset($config['ad_popup_link']) ? $config['ad_popup_link'] : '',
+            'btn'     => isset($config['ad_popup_btn']) && $config['ad_popup_btn'] ? $config['ad_popup_btn'] : '知道了',
+        ])};
+    </script>
+    <script>
+        // 进站弹窗广告：后台可配置，每个访客每次进站只弹一次（浏览器会话内不重复）
+        (function () {
+            var cfg = window.SITE_POPUP_AD || { enable: 0 };
+            function init() {
+                if (!cfg || cfg.enable != 1) return;
+                if (!cfg.title && !cfg.image && !cfg.content) return;
+                var shown = false;
+                try {
+                    shown = sessionStorage.getItem('site_popup_ad_shown');
+                    sessionStorage.setItem('site_popup_ad_shown', '1');
+                } catch (e) { shown = false; }
+                if (shown) return;
+
+                var wrap = document.createElement('div');
+                wrap.id = 'site-popup-ad';
+                wrap.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:999999;display:flex;align-items:center;justify-content:center;';
+                var h = '<div class="spa-mask" style="position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.55);"></div>';
+                h += '<div class="spa-box" style="position:relative;width:92%;max-width:420px;max-height:85vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.3);z-index:1;animation:spaIn .3s ease;">';
+                h += '<div class="spa-close" style="position:absolute;right:8px;top:6px;width:30px;height:30px;line-height:28px;text-align:center;font-size:22px;color:#999;cursor:pointer;z-index:2;border-radius:50%;background:rgba(255,255,255,.9);">×</div>';
+                if (cfg.image) {
+                    h += '<img src="' + cfg.image + '" alt="广告" style="width:100%;display:block;max-height:40vh;object-fit:cover;" onerror="this.style.display=\'none\'">';
+                }
+                h += '<div style="padding:18px 22px 24px;text-align:center;">';
+                if (cfg.title) {
+                    h += '<div class="spa-title" style="font-size:18px;font-weight:700;color:#222;margin-bottom:10px;">' + cfg.title + '</div>';
+                }
+                if (cfg.content) {
+                    h += '<div class="spa-content" style="font-size:14px;color:#555;line-height:1.7;word-break:break-word;">' + cfg.content + '</div>';
+                }
+                var btnText = cfg.btn || '知道了';
+                if (cfg.link) {
+                    h += '<a class="spa-btn" href="' + cfg.link + '" target="_blank" rel="noopener" style="display:block;margin-top:18px;padding:10px 0;background:linear-gradient(135deg,#ff6b6b,#ff8e53);color:#fff;border-radius:22px;font-size:15px;font-weight:600;text-decoration:none;">' + btnText + '</a>';
+                } else {
+                    h += '<div class="spa-btn" style="display:block;margin-top:18px;padding:10px 0;background:linear-gradient(135deg,#ff6b6b,#ff8e53);color:#fff;border-radius:22px;font-size:15px;font-weight:600;cursor:pointer;">' + btnText + '</div>';
+                }
+                h += '</div></div>';
+                wrap.innerHTML = h;
+                document.body.appendChild(wrap);
+
+                function close() {
+                    if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+                }
+                wrap.querySelector('.spa-mask').addEventListener('click', close);
+                wrap.querySelector('.spa-close').addEventListener('click', close);
+                var btnEl = wrap.querySelector('.spa-btn');
+                if (btnEl && !cfg.link) btnEl.addEventListener('click', close);
+
+                if (!document.getElementById('spaStyle')) {
+                    var st = document.createElement('style');
+                    st.id = 'spaStyle';
+                    st.textContent = '@keyframes spaIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}';
+                    document.head.appendChild(st);
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 500); });
+            } else {
+                setTimeout(init, 500);
+            }
+        })();
+    </script>
 </head>

@@ -42,6 +42,13 @@ class SiteService
         'ad_detail_top',
         'ad_detail_bottom',
         'ad_footer',
+        // 进站弹窗广告
+        'ad_popup_enable',
+        'ad_popup_title',
+        'ad_popup_image',
+        'ad_popup_content',
+        'ad_popup_link',
+        'ad_popup_btn',
         // 前端样式
         'home_bg',
         'home_background',

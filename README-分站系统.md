@@ -123,7 +123,7 @@ php think site:create --name=XX资源站 --domain=ziyuan.example.com --account=s
 | 分类 | 配置项 |
 | --- | --- |
 | 基础信息 | app_name、app_subname、logo、app_icon、app_links、qcode、footer_dec、footer_copyright |
-| 广告位 | ad_home_top、ad_home_bottom、ad_list_top、ad_list_bottom、ad_detail_top、ad_detail_bottom、ad_footer |
+| 广告位 | ad_home_top、ad_home_bottom、ad_list_top、ad_list_bottom、ad_detail_top、ad_detail_bottom、ad_footer、ad_popup_enable、ad_popup_title、ad_popup_image、ad_popup_content、ad_popup_link、ad_popup_btn |
 | 前端样式 | home_bg、home_background、home_color、home_theme、other_background、home_css |
 | SEO | app_title、app_keywords、app_description、seo_statistics |
 | 搜索提示 | search_tips、search_bg |

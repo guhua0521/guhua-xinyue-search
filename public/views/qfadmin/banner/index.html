@@ -40,6 +40,46 @@
         </div>
         <el-alert type="info" :closable="false" style="margin-bottom:14px;"
             title="广告位支持图片或HTML代码，保存后对站点前台立即生效；留空表示不显示"></el-alert>
+        <el-card shadow="hover" style="margin-bottom:16px;">
+            <div slot="header" style="display:flex;justify-content:space-between;align-items:center;">
+                <b>进站弹窗广告</b>
+                <el-tag size="mini" type="warning">开启后进入网站自动弹出，每个访客每次进站只弹一次</el-tag>
+            </div>
+            <el-form label-width="90px" label-position="left">
+                <el-form-item label="开关">
+                    <el-switch v-model="popup.enable" active-text="开启" inactive-text="关闭"></el-switch>
+                </el-form-item>
+                <el-form-item label="标题">
+                    <el-input v-model="popup.title" placeholder="弹窗标题，可留空"></el-input>
+                </el-form-item>
+                <el-form-item label="图片">
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <el-input v-model="popup.image" placeholder="图片地址，可留空"></el-input>
+                        <el-upload action="/admin/attach/uploadImage" :data="PostBase" :show-file-list="false"
+                            :before-upload="beforeImageUpload" :on-success="onImageUploadSuccess"
+                            :on-error="onImageUploadError">
+                            <el-button size="small" type="primary" icon="el-icon-upload">上传图片</el-button>
+                        </el-upload>
+                    </div>
+                    <el-image v-if="popup.image" :src="popup.image" fit="contain"
+                        style="width:200px;height:130px;margin-top:8px;border:1px dashed #dcdfe6;border-radius:6px;background:#fafafa;">
+                    </el-image>
+                </el-form-item>
+                <el-form-item label="内容">
+                    <el-input type="textarea" :rows="3" v-model="popup.content"
+                        placeholder="支持文字或HTML代码，可留空"></el-input>
+                </el-form-item>
+                <el-form-item label="跳转链接">
+                    <el-input v-model="popup.link" placeholder="点击按钮跳转的链接；留空则点击按钮仅关闭弹窗"></el-input>
+                </el-form-item>
+                <el-form-item label="按钮文字">
+                    <el-input v-model="popup.btn" placeholder="默认：知道了" style="max-width:240px;"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" size="small" @click="saveAll" :loading="saving">保存弹窗设置</el-button>
+                </el-form-item>
+            </el-form>
+        </el-card>
         <div class="banner-grid" v-loading="loading">
             <el-card v-for="(item, i) in banners" :key="i" shadow="hover" class="banner-card">
                 <div slot="header"><b>{{ item.conf_title }}</b>
@@ -65,6 +105,7 @@
                     loading: false,
                     saving: false,
                     banners: [],
+                    popup: { enable: false, title: '', image: '', content: '', link: '', btn: '' },
                 }
             },
             created() {
@@ -78,8 +119,20 @@
                         .then(function (res) {
                             that.loading = false;
                             if (res.data.code == 200) {
-                                that.banners = res.data.data.filter(function (item) {
-                                    return item.conf_key.indexOf('ad_') === 0;
+                                that.banners = [];
+                                that.popup = { enable: false, title: '', image: '', content: '', link: '', btn: '' };
+                                res.data.data.forEach(function (item) {
+                                    if (item.conf_key.indexOf('ad_') !== 0) return;
+                                    if (item.conf_key.indexOf('ad_popup_') === 0) {
+                                        var key = item.conf_key.replace('ad_popup_', '');
+                                        if (key === 'enable') {
+                                            that.popup.enable = String(item.conf_value) === '1';
+                                        } else {
+                                            that.popup[key] = item.conf_value || '';
+                                        }
+                                    } else {
+                                        that.banners.push(item);
+                                    }
                                 });
                             } else {
                                 that.$message.error(res.data.message);
@@ -96,6 +149,12 @@
                     this.banners.forEach(function (item) {
                         postData[item.conf_key] = item.conf_value;
                     });
+                    postData['ad_popup_enable'] = this.popup.enable ? '1' : '0';
+                    postData['ad_popup_title'] = this.popup.title;
+                    postData['ad_popup_image'] = this.popup.image;
+                    postData['ad_popup_content'] = this.popup.content;
+                    postData['ad_popup_link'] = this.popup.link;
+                    postData['ad_popup_btn'] = this.popup.btn;
                     this.saving = true;
                     axios.post('/admin/conf/updateBaseConfig', Object.assign({}, PostBase, postData))
                         .then(function (res) {
@@ -110,6 +169,28 @@
                             that.saving = false;
                             that.$message.error('保存失败');
                         });
+                },
+                beforeImageUpload(file) {
+                    const isImage = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif';
+                    const isLt2M = file.size / 1024 / 1024 < 2;
+                    if (!isImage) {
+                        this.$message.error('上传图片只能是 JPG/PNG/GIF 格式!');
+                    }
+                    if (!isLt2M) {
+                        this.$message.error('上传图片大小不能超过 2MB!');
+                    }
+                    return isImage && isLt2M;
+                },
+                onImageUploadSuccess(res) {
+                    if (res.code == CODE_SUCCESS) {
+                        this.popup.image = res.data.attach_path;
+                        this.$message({ message: '图片上传成功', type: 'success' });
+                    } else {
+                        this.$message.error(res.message);
+                    }
+                },
+                onImageUploadError() {
+                    this.$message.error('图片上传失败');
                 },
             }
         });
