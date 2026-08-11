@@ -922,7 +922,11 @@
                     return;
                 }
                 var showText = function() {
-                    if (btn) btn.innerHTML = '<i class="iconfont icon-file"></i> 收起文件';
+                    if (btn) {
+                        btn.style.pointerEvents = '';
+                        btn.style.opacity = '';
+                        btn.innerHTML = '<i class="iconfont icon-file"></i> 收起文件';
+                    }
                 };
                 var countItems = function(nodes) {
                     var n = 0;
@@ -945,7 +949,14 @@
                     return h;
                 };
                 if (!box.dataset.loaded) {
-                    box.innerHTML = '<div style="padding:12px;text-align:center;color:#999;font-size:13px;">文件加载中...</div>';
+                    // 点击后立即反馈：按钮转圈 + 展开区域显示加载动画，避免用户以为没点到
+                    box.style.display = 'block';
+                    box.innerHTML = '<div style="padding:14px;text-align:center;color:#999;font-size:13px;"><i class="iconfont icon-jiazai" style="display:inline-block;font-size:18px;margin-right:6px;vertical-align:-2px;animation:fileListSpin 1s linear infinite;"></i>文件加载中...</div>';
+                    if (btn) {
+                        btn.style.pointerEvents = 'none';
+                        btn.style.opacity = '0.7';
+                        btn.innerHTML = '<i class="iconfont icon-jiazai" style="display:inline-block;animation:fileListSpin 1s linear infinite;"></i> 加载中...';
+                    }
                     // 事件委托：点击文件夹行展开/收起（比行内onclick更稳）
                     box.onclick = function(e) {
                         var t = e.target;
@@ -1010,6 +1021,10 @@
                 var linkCheckStyle = document.createElement('style');
                 linkCheckStyle.id = 'linkCheckAnimations';
                 linkCheckStyle.textContent = `
+                    @keyframes fileListSpin {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
                     @keyframes linkCheckRotate {
                         from { transform: rotate(0deg); }
                         to { transform: rotate(360deg); }
