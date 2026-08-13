@@ -139,22 +139,27 @@ abstract class QfShop
                 View::assign('menuList', $menuList);
 
                 $node = $this->nodeModel->where(['node_module' => $this->module, 'node_controller' => strtolower($this->controller), 'node_action' => $this->action])->find();
+                // 非菜单页面（如修改密码/修改资料）没有对应节点，给个空节点避免模板报错
+                if (!$node) {
+                    $node = ['node_id' => 0, 'node_title' => '', 'node_pid' => 0];
+                }
                 View::assign('node', $node);
 
-                if($node['node_pid']==0){
+                $nodePid = $node['node_pid'] ?? 0;
+                if($node && $node['node_pid']==0){
                     View::assign('menu', 0);
                 }else{
-                    $res = $this->nodeModel->where('node_id',$node['node_pid'])->find();
-                    View::assign('menu', $res['node_pid']);
+                    $res = $nodePid ? $this->nodeModel->where('node_id',$nodePid)->find() : null;
+                    View::assign('menu', $res['node_pid'] ?? 0);
                 }
                 $menuLists = [];
                 foreach ($menuList as $key => $value) {
-                    if($value['node_id'] == $node['node_pid']){
-                        $menuLists = $value['subList'];
+                    if($value['node_id'] == $nodePid){
+                        $menuLists = $value['subList'] ?? [];
                     }else{
-                        foreach ($value['subList'] as $k => $v) {
-                            if($v['node_id'] == $node['node_pid']){
-                                $menuLists = $value['subList'];
+                        foreach (($value['subList'] ?? []) as $k => $v) {
+                            if($v['node_id'] == $nodePid){
+                                $menuLists = $value['subList'] ?? [];
                             }
                         }
                     }
