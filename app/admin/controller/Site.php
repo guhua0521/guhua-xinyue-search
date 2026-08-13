@@ -322,7 +322,8 @@ class Site extends QfShop
         if (empty($domain)) {
             return ['ok' => false, 'message' => '无域名'];
         }
-        $cmd = 'sudo -n /usr/local/bin/update-subsite-nginx.sh ' . escapeshellarg($action) . ' ' . escapeshellarg($domain) . ' 2>&1';
+        $root = rtrim(app()->getRootPath(), '/') . '/public';
+        $cmd = 'sudo -n /usr/local/bin/update-subsite-nginx.sh ' . escapeshellarg($action) . ' ' . escapeshellarg($domain) . ' ' . escapeshellarg($root) . ' 2>&1';
         exec($cmd, $out, $code);
         $message = trim(implode("\n", $out));
         return [

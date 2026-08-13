@@ -1,13 +1,14 @@
 #!/bin/bash
 # ============================================================
 # 分站域名 Nginx 配置自动生成脚本
-# 用法: update-subsite-nginx.sh add <域名> | remove <域名>
+# 用法: update-subsite-nginx.sh add <域名> [站点public目录] | remove <域名>
 # 由后台开通分站时调用，仅允许合法域名，不影响 pidanss.com 反代
 # ============================================================
 set -e
 
 ACTION="$1"
 DOMAIN="$2"
+ROOT="${3:-/var/www/xinyue-search/public}"
 NGINX_DIR="/etc/nginx/sites-enabled"
 
 if [ -z "$DOMAIN" ]; then
@@ -24,6 +25,10 @@ if [ ${#DOMAIN} -gt 253 ]; then
     echo "域名过长"
     exit 1
 fi
+case "$ROOT" in
+    /var/www/*) ;;
+    *) echo "站点目录不合法: $ROOT"; exit 1 ;;
+esac
 
 DOMAIN=$(echo "$DOMAIN" | tr 'A-Z' 'a-z')
 CONF_FILE="$NGINX_DIR/subsite-$DOMAIN.conf"
@@ -38,7 +43,7 @@ server {
     ssl_certificate /etc/letsencrypt/live/pidan.guhua.dpdns.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/pidan.guhua.dpdns.org/privkey.pem;
 
-    root /var/www/xinyue-search/public;
+    root $ROOT;
     index index.php index.html;
 
     client_max_body_size 20m;
