@@ -356,6 +356,7 @@
         </el-form-item>
         <el-form-item style="width:120px;">
             <el-select size="small" v-model="search.is_time" placeholder="资源类型">
+                <el-option label="全部资源" value=""></el-option>
                 <el-option label="永久资源" :value="0"></el-option>
                 <el-option label="临时资源" :value="1"></el-option>
             </el-select>
@@ -648,11 +649,11 @@ https://pan.xunlei.com/s/xxxxxx?pwd=xxxx" v-model="Batchform.urls" rows="20" sho
                         this.search = {
                             keyword: "",
                             filter: "title",
-                            source_category_id: '',
-                            is_type: '',
-                            account_name: '',
-                            is_time: 0
-                        }
+                        source_category_id: '',
+                        is_type: '',
+                        account_name: '',
+                        is_time: 1
+                    }
                         // 重置排序
                         this.form.sort_field = '';
                         this.form.sort_order = '';
