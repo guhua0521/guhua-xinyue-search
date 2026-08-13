@@ -264,7 +264,7 @@ CREATE TABLE `qf_node`  (
 -- Records of qf_node
 -- ----------------------------
 INSERT INTO `qf_node` VALUES (1, '概况', '', 'qfadmin', 'index', 'index', 0, 999, 1, 'el-icon-house', NULL, 0, 0, 1620874188);
-INSERT INTO `qf_node` VALUES (2, '运营人员', '', 'qfadmin', '', '', 3, 0, 1, 'el-icon-user', NULL, 0, 0, 1618302083);
+INSERT INTO `qf_node` VALUES (2, '运营人员', '', 'qfadmin', '', '', 0, 0, 1, 'el-icon-user', NULL, 0, 0, 1618302083);
 INSERT INTO `qf_node` VALUES (3, '系统', '', 'qfadmin', '', '', 0, 0, 1, 'el-icon-data-board', NULL, 0, 0, 1618301765);
 INSERT INTO `qf_node` VALUES (4, '配置', '', 'qfadmin', '', '', 0, 0, 1, 'el-icon-setting', NULL, 0, 1617269862, 1712241481);
 INSERT INTO `qf_node` VALUES (100, '管理员列表', '', 'qfadmin', 'admin', 'index', 2, 0, 1, 'el-icon-user', '', 0, 0, 1618794624);
